@@ -63,7 +63,7 @@ const About = () => {
         </div>
       </section>
 
-      <HoneycombDivider count={5} />
+      <HoneycombDivider />
 
       {/* Interior image band */}
       <section className="relative h-[35vh]">
@@ -110,7 +110,7 @@ const About = () => {
         </div>
       </section>
 
-      <HoneycombDivider count={5} />
+      <HoneycombDivider />
 
       <Footer />
     </div>

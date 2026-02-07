@@ -1,28 +1,53 @@
 import { motion } from "framer-motion";
 
 /**
- * A row of small hexagons used as a decorative section divider.
+ * A sleek section divider with a thin line, a centered hexagon accent,
+ * and subtle fade-in animation.
  */
-const HoneycombDivider = ({ count = 5, className = "" }: { count?: number; className?: string }) => (
-  <div className={`flex items-center justify-center gap-3 py-6 ${className}`}>
-    <div className="h-px flex-1 max-w-[80px] bg-gradient-to-r from-transparent to-primary/30" />
-    {Array.from({ length: count }).map((_, i) => (
-      <motion.svg
-        key={i}
-        className="w-4 h-4 text-primary"
-        viewBox="0 0 100 100"
-        initial={{ opacity: 0, scale: 0 }}
-        whileInView={{ opacity: 0.4 + (i === Math.floor(count / 2) ? 0.4 : 0), scale: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: i * 0.1, duration: 0.3 }}
-      >
-        <polygon
-          points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5"
-          fill="currentColor"
-        />
-      </motion.svg>
-    ))}
-    <div className="h-px flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-primary/30" />
+const HoneycombDivider = ({ className = "" }: { className?: string }) => (
+  <div className={`flex items-center justify-center py-8 px-8 ${className}`}>
+    {/* Left line */}
+    <motion.div
+      className="h-px flex-1 max-w-[120px]"
+      style={{
+        background: `linear-gradient(90deg, transparent, hsl(var(--primary) / 0.25))`,
+      }}
+      initial={{ scaleX: 0, originX: 0 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    />
+
+    {/* Center hex cluster — 3 overlapping hexagons */}
+    <motion.div
+      className="mx-4 flex items-center gap-0.5"
+      initial={{ opacity: 0, scale: 0.7 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.4, delay: 0.3 }}
+    >
+      <svg className="w-3 h-3 text-primary/20" viewBox="0 0 100 100">
+        <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
+      </svg>
+      <svg className="w-4 h-4 text-primary/50" viewBox="0 0 100 100">
+        <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
+      </svg>
+      <svg className="w-3 h-3 text-primary/20" viewBox="0 0 100 100">
+        <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
+      </svg>
+    </motion.div>
+
+    {/* Right line */}
+    <motion.div
+      className="h-px flex-1 max-w-[120px]"
+      style={{
+        background: `linear-gradient(90deg, hsl(var(--primary) / 0.25), transparent)`,
+      }}
+      initial={{ scaleX: 0, originX: 1 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    />
   </div>
 );
 

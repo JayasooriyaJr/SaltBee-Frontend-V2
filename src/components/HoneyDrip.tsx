@@ -1,51 +1,49 @@
 import { motion } from "framer-motion";
 
 /**
- * A decorative honey-drip section divider — golden drips hanging from the top edge.
+ * Sleek honey-drip section divider — a golden shimmer line with
+ * elegant drip accents that animate on scroll.
  */
 const drips = [
-  { left: "8%", height: 28, delay: 0 },
-  { left: "15%", height: 18, delay: 0.6 },
-  { left: "25%", height: 35, delay: 0.2 },
-  { left: "38%", height: 20, delay: 1.0 },
-  { left: "50%", height: 42, delay: 0.4 },
-  { left: "62%", height: 24, delay: 0.8 },
-  { left: "75%", height: 32, delay: 0.3 },
-  { left: "85%", height: 16, delay: 1.2 },
-  { left: "92%", height: 22, delay: 0.7 },
+  { left: "12%", height: 16, delay: 0.1, width: 3 },
+  { left: "28%", height: 24, delay: 0.4, width: 2 },
+  { left: "50%", height: 30, delay: 0.2, width: 3 },
+  { left: "72%", height: 20, delay: 0.5, width: 2 },
+  { left: "88%", height: 14, delay: 0.3, width: 3 },
 ];
 
 const HoneyDrip = ({ className = "" }: { className?: string }) => (
-  <div className={`relative w-full h-12 overflow-hidden ${className}`}>
-    {/* Top bar */}
-    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+  <div className={`relative w-full h-10 overflow-hidden ${className}`}>
+    {/* Shimmer line */}
+    <motion.div
+      className="absolute top-0 left-0 right-0 h-px"
+      style={{
+        background: `linear-gradient(90deg, transparent 0%, hsl(var(--primary) / 0.1) 15%, hsl(var(--primary) / 0.5) 50%, hsl(var(--primary) / 0.1) 85%, transparent 100%)`,
+      }}
+      initial={{ scaleX: 0 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1, ease: "easeOut" }}
+    />
 
     {drips.map((drip, i) => (
       <motion.div
         key={i}
-        className="absolute top-0 w-2 rounded-b-full"
+        className="absolute top-0 rounded-b-full"
         style={{
           left: drip.left,
-          background: `linear-gradient(to bottom, hsl(var(--primary) / 0.6), hsl(var(--honey-glow) / 0.3))`,
+          width: drip.width,
+          background: `linear-gradient(to bottom, hsl(var(--primary) / 0.5), hsl(var(--primary) / 0.15), transparent)`,
         }}
-        initial={{ height: 0 }}
-        whileInView={{ height: drip.height }}
+        initial={{ height: 0, opacity: 0 }}
+        whileInView={{ height: drip.height, opacity: 1 }}
         viewport={{ once: true }}
         transition={{
-          duration: 1.2,
+          duration: 0.8,
           delay: drip.delay,
-          ease: "easeOut",
+          ease: [0.33, 1, 0.68, 1],
         }}
-      >
-        {/* Drop at the bottom */}
-        <motion.div
-          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-primary/40"
-          initial={{ scale: 0 }}
-          whileInView={{ scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: drip.delay + 1, duration: 0.3 }}
-        />
-      </motion.div>
+      />
     ))}
   </div>
 );
