@@ -13,7 +13,18 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ['"Playfair Display"', 'Georgia', 'serif'],
+        body: ['Lato', 'sans-serif'],
+      },
       colors: {
+        korean: {
+          red: "hsl(var(--korean-red))",
+          gold: "hsl(var(--korean-gold))",
+          cream: "hsl(var(--korean-cream))",
+          warm: "hsl(var(--korean-warm))",
+          dark: "hsl(var(--korean-dark))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
