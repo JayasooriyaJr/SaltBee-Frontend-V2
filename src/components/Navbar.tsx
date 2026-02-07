@@ -17,16 +17,32 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          {/* Animated hex logo mark */}
-          <motion.svg
-            className="w-8 h-8 text-primary"
-            viewBox="0 0 100 100"
-            whileHover={{ rotate: 60, scale: 1.1 }}
-            transition={{ duration: 0.4 }}
+          {/* Sleek hex logo mark with glow */}
+          <motion.div
+            className="relative w-9 h-9"
+            whileHover={{ scale: 1.08 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
           >
-            <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" opacity="0.9" />
-            <text x="50" y="58" textAnchor="middle" fontSize="30" fontWeight="bold" fill="hsl(40,20%,8%)">SB</text>
-          </motion.svg>
+            <motion.svg
+              className="w-9 h-9 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.3)]"
+              viewBox="0 0 100 100"
+              whileHover={{ rotate: 30 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              <polygon
+                points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5"
+                fill="currentColor"
+              />
+              <text
+                x="50" y="58" textAnchor="middle"
+                fontSize="28" fontWeight="bold"
+                fill="hsl(40,20%,8%)"
+                fontFamily="'Playfair Display', serif"
+              >
+                SB
+              </text>
+            </motion.svg>
+          </motion.div>
           
           <div>
             <span className="font-display text-xl font-bold text-primary">Salt Bee</span>

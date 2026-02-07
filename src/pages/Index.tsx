@@ -178,7 +178,7 @@ const Index = () => {
       </section>
 
       {/* Honeycomb divider */}
-      <HoneycombDivider count={7} />
+      <HoneycombDivider />
 
       {/* Restaurant Interior */}
       <section className="relative">
@@ -264,7 +264,7 @@ const Index = () => {
         </div>
       </section>
 
-      <HoneycombDivider count={5} />
+      <HoneycombDivider />
 
       <Footer />
     </motion.div>

@@ -112,7 +112,7 @@ const Menu = () => {
         </div>
       </section>
 
-      <HoneycombDivider count={5} />
+      <HoneycombDivider />
 
       <Footer />
     </div>
