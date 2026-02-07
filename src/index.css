@@ -6,77 +6,51 @@
 
 @layer base {
   :root {
-    --background: 30 25% 96%;
-    --foreground: 20 10% 15%;
+    --background: 40 20% 8%;
+    --foreground: 45 30% 90%;
 
-    --card: 30 20% 98%;
-    --card-foreground: 20 10% 15%;
+    --card: 40 15% 12%;
+    --card-foreground: 45 30% 90%;
 
-    --popover: 30 20% 98%;
-    --popover-foreground: 20 10% 15%;
+    --popover: 40 15% 12%;
+    --popover-foreground: 45 30% 90%;
 
-    --primary: 0 50% 30%;
-    --primary-foreground: 30 25% 96%;
+    --primary: 45 95% 55%;
+    --primary-foreground: 40 20% 8%;
 
-    --secondary: 30 20% 92%;
-    --secondary-foreground: 20 10% 15%;
+    --secondary: 40 15% 16%;
+    --secondary-foreground: 45 30% 90%;
 
-    --muted: 30 15% 90%;
-    --muted-foreground: 20 8% 45%;
+    --muted: 40 10% 18%;
+    --muted-foreground: 40 15% 55%;
 
-    --accent: 35 60% 50%;
-    --accent-foreground: 30 25% 96%;
+    --accent: 0 70% 45%;
+    --accent-foreground: 45 30% 95%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 30 15% 85%;
-    --input: 30 15% 85%;
-    --ring: 0 50% 30%;
+    --border: 45 20% 20%;
+    --input: 45 15% 18%;
+    --ring: 45 95% 55%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --honey: 45 95% 55%;
+    --honey-dark: 38 80% 40%;
+    --honey-glow: 45 100% 65%;
+    --bee-red: 0 70% 45%;
+    --bee-dark: 40 20% 8%;
+    --bee-warm: 40 15% 12%;
 
-    --korean-red: 0 50% 30%;
-    --korean-gold: 35 60% 50%;
-    --korean-cream: 30 25% 96%;
-    --korean-warm: 25 30% 94%;
-    --korean-dark: 20 10% 15%;
-  }
-
-  .dark {
-    --background: 20 10% 10%;
-    --foreground: 30 25% 96%;
-    --card: 20 10% 12%;
-    --card-foreground: 30 25% 96%;
-    --popover: 20 10% 12%;
-    --popover-foreground: 30 25% 96%;
-    --primary: 0 50% 45%;
-    --primary-foreground: 30 25% 96%;
-    --secondary: 20 15% 18%;
-    --secondary-foreground: 30 25% 96%;
-    --muted: 20 15% 18%;
-    --muted-foreground: 30 15% 65%;
-    --accent: 35 60% 50%;
-    --accent-foreground: 30 25% 96%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 20 15% 20%;
-    --input: 20 15% 20%;
-    --ring: 0 50% 45%;
-    --korean-red: 0 50% 45%;
-    --korean-gold: 35 60% 50%;
-    --korean-cream: 20 10% 10%;
-    --korean-warm: 20 15% 14%;
-    --korean-dark: 30 25% 96%;
+    --sidebar-background: 40 15% 10%;
+    --sidebar-foreground: 45 30% 90%;
+    --sidebar-primary: 45 95% 55%;
+    --sidebar-primary-foreground: 40 20% 8%;
+    --sidebar-accent: 40 15% 16%;
+    --sidebar-accent-foreground: 45 30% 90%;
+    --sidebar-border: 45 20% 20%;
+    --sidebar-ring: 45 95% 55%;
   }
 }
 
@@ -95,8 +69,16 @@
 }
 
 @layer utilities {
-  .text-korean-sub {
-    @apply text-sm tracking-wider;
-    color: hsl(var(--korean-gold));
+  .text-honey {
+    color: hsl(var(--honey));
+  }
+  .bg-honey {
+    background-color: hsl(var(--honey));
+  }
+  .text-honey-glow {
+    color: hsl(var(--honey-glow));
+  }
+  .text-bee-red {
+    color: hsl(var(--bee-red));
   }
 }
