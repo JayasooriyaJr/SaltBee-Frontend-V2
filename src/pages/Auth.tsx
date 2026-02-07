@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import interiorImage from "@/assets/restaurant-interior.jpg";
-import HoneycombPattern from "@/components/HoneycombPattern";
+
 
 const Auth = () => {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -12,7 +12,6 @@ const Auth = () => {
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left - Form */}
       <div className="relative flex flex-col p-8 lg:p-16 bg-background overflow-hidden">
-        <HoneycombPattern className="text-primary" />
         <Link to="/" className="relative z-10 flex items-center gap-2 mb-12">
           <svg className="w-7 h-7 text-primary" viewBox="0 0 100 100">
             <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />

@@ -72,7 +72,6 @@ const About = () => {
 
       {/* Values */}
       <section className="relative py-24 bg-secondary overflow-hidden">
-        <HoneycombPattern className="text-primary" />
         <div className="container relative z-10 text-center">
           <ScrollReveal>
             <span className="text-xs tracking-[0.3em] text-primary uppercase">우리의 가치</span>

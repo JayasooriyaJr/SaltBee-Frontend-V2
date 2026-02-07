@@ -1,10 +1,9 @@
 import { MapPin, Phone, Instagram } from "lucide-react";
-import HoneycombPattern from "@/components/HoneycombPattern";
+
 
 const Footer = () => {
   return (
     <footer className="relative bg-secondary border-t border-border overflow-hidden">
-      <HoneycombPattern className="text-primary" />
       <div className="container relative z-10 py-12">
         <div className="text-center mb-10">
           <p className="font-display text-lg text-primary">잘 먹겠습니다</p>
