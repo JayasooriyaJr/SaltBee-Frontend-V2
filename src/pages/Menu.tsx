@@ -4,7 +4,6 @@ import { menuItems, categories, type MenuCategory } from "@/data/menuData";
 import DishCard from "@/components/DishCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import HoneycombPattern from "@/components/HoneycombPattern";
 import ScrollReveal from "@/components/ScrollReveal";
 
 const Menu = () => {
@@ -27,7 +26,6 @@ const Menu = () => {
 
       {/* Hero */}
       <section className="relative py-24 text-center overflow-hidden bg-secondary">
-        <HoneycombPattern className="text-primary" />
         <div className="relative z-10">
           <ScrollReveal>
             <div className="inline-flex items-center gap-3 mb-4">

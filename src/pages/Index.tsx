@@ -8,7 +8,7 @@ import DishCard from "@/components/DishCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HoneycombPattern from "@/components/HoneycombPattern";
-import HexDecorations from "@/components/HexDecorations";
+
 import ScrollReveal from "@/components/ScrollReveal";
 
 const signatureDishes = menuItems.filter((item) => item.popular).slice(0, 4);
@@ -29,7 +29,6 @@ const Index = () => {
         />
         <div className="absolute inset-0 bg-background/75" />
         <HoneycombPattern className="text-primary" />
-        <HexDecorations />
 
         <div className="relative z-10 text-center px-4">
           <motion.div
@@ -100,7 +99,6 @@ const Index = () => {
 
       {/* Signature Dishes */}
       <section className="relative py-28 bg-secondary overflow-hidden">
-        <HoneycombPattern className="text-primary" />
         <div className="container relative z-10">
           <ScrollReveal>
             <div className="text-center mb-16">
@@ -161,7 +159,6 @@ const Index = () => {
 
       {/* Our Story */}
       <section className="relative py-28 bg-background overflow-hidden">
-        <HexDecorations />
         <div className="container relative z-10">
           <div className="grid md:grid-cols-2 gap-16 items-start">
             <ScrollReveal>
