@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Leaf, Shield, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,15 +9,41 @@ import DishCard from "@/components/DishCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HoneycombPattern from "@/components/HoneycombPattern";
-
 import ScrollReveal from "@/components/ScrollReveal";
+import BeeLoader from "@/components/BeeLoader";
+import HoneyDrip from "@/components/HoneyDrip";
+import FlyingBee from "@/components/FlyingBee";
+import HoneycombDivider from "@/components/HoneycombDivider";
 
 const signatureDishes = menuItems.filter((item) => item.popular).slice(0, 4);
 
 const Index = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <BeeLoader size={140} text="Preparing the hive..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-background"
+    >
       <Navbar />
+
+      {/* Flying bee easter egg */}
+      <FlyingBee className="top-32" />
 
       {/* Hero */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
@@ -52,6 +79,13 @@ const Index = () => {
           >
             <span className="text-accent">Salt</span>{" "}
             <span className="text-primary">Bee</span>
+            <motion.span
+              className="inline-block ml-2 text-5xl md:text-7xl"
+              animate={{ y: [0, -6, 0], rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            >
+              🐝
+            </motion.span>
           </motion.h1>
 
           <motion.div
@@ -97,6 +131,9 @@ const Index = () => {
         </motion.div>
       </section>
 
+      {/* Honey drip transition */}
+      <HoneyDrip />
+
       {/* Signature Dishes */}
       <section className="relative py-28 bg-secondary overflow-hidden">
         <div className="container relative z-10">
@@ -140,15 +177,23 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Honeycomb divider */}
+      <HoneycombDivider count={7} />
+
       {/* Restaurant Interior */}
       <section className="relative">
         <img src={interiorImage} alt="Salt Bee restaurant interior" className="w-full h-[55vh] object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/20" />
         <div className="absolute inset-0 flex items-center justify-center text-center z-10 px-4">
           <ScrollReveal>
-            <svg className="w-16 h-16 text-primary/30 mx-auto mb-4" viewBox="0 0 100 100">
+            <motion.svg
+              className="w-16 h-16 text-primary/30 mx-auto mb-4"
+              viewBox="0 0 100 100"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            >
               <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="none" stroke="currentColor" strokeWidth="2" />
-            </svg>
+            </motion.svg>
             <p className="text-primary font-display text-3xl md:text-4xl italic max-w-2xl mx-auto">
               "Welcome to our hive"
             </p>
@@ -156,6 +201,9 @@ const Index = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      {/* Honey drip into story section */}
+      <HoneyDrip />
 
       {/* Our Story */}
       <section className="relative py-28 bg-background overflow-hidden">
@@ -216,8 +264,10 @@ const Index = () => {
         </div>
       </section>
 
+      <HoneycombDivider count={5} />
+
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 

@@ -6,6 +6,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HoneycombPattern from "@/components/HoneycombPattern";
 import ScrollReveal from "@/components/ScrollReveal";
+import HoneyDrip from "@/components/HoneyDrip";
+import HoneycombDivider from "@/components/HoneycombDivider";
 
 const values = [
   { icon: Heart, title: "Passion", korean: "정성", desc: "Every dish is crafted with love and dedication to the art of Korean cooking." },
@@ -38,6 +40,8 @@ const About = () => {
         </div>
       </section>
 
+      <HoneyDrip />
+
       {/* Story Content */}
       <section className="py-20">
         <div className="container max-w-2xl text-center space-y-8">
@@ -59,6 +63,8 @@ const About = () => {
         </div>
       </section>
 
+      <HoneycombDivider count={5} />
+
       {/* Interior image band */}
       <section className="relative h-[35vh]">
         <img src={interiorImage} alt="Restaurant interior" className="w-full h-full object-cover" />
@@ -69,6 +75,8 @@ const About = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      <HoneyDrip />
 
       {/* Values */}
       <section className="relative py-24 bg-secondary overflow-hidden">
@@ -82,9 +90,14 @@ const About = () => {
               <ScrollReveal key={v.title} delay={i * 100}>
                 <div className="group p-8 rounded-xl bg-card border border-border hover:border-primary/30 transition-all duration-300 text-center hover:shadow-[0_0_25px_-5px_hsl(var(--primary)/0.1)]">
                   <div className="w-16 h-16 mx-auto relative flex items-center justify-center">
-                    <svg className="w-16 h-16 text-primary/15 group-hover:text-primary/25 transition-colors duration-300" viewBox="0 0 100 100">
+                    <motion.svg
+                      className="w-16 h-16 text-primary/15 group-hover:text-primary/25 transition-colors duration-300"
+                      viewBox="0 0 100 100"
+                      whileHover={{ rotate: 60, scale: 1.1 }}
+                      transition={{ duration: 0.4 }}
+                    >
                       <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-                    </svg>
+                    </motion.svg>
                     <v.icon className="h-7 w-7 text-primary absolute" />
                   </div>
                   <h3 className="font-display font-semibold text-foreground text-lg mt-5">{v.title}</h3>
@@ -96,6 +109,8 @@ const About = () => {
           </div>
         </div>
       </section>
+
+      <HoneycombDivider count={5} />
 
       <Footer />
     </div>

@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search } from "lucide-react";
 import { menuItems, categories, type MenuCategory } from "@/data/menuData";
 import DishCard from "@/components/DishCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
+import HoneyDrip from "@/components/HoneyDrip";
+import HoneycombDivider from "@/components/HoneycombDivider";
+import BeeLoader from "@/components/BeeLoader";
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState<MenuCategory>("all");
@@ -44,6 +47,8 @@ const Menu = () => {
           </ScrollReveal>
         </div>
       </section>
+
+      <HoneyDrip />
 
       {/* Filters */}
       <section className="sticky top-16 z-40 bg-background/95 backdrop-blur border-b border-border py-4">
@@ -95,16 +100,10 @@ const Menu = () => {
             </>
           ) : (
             <div className="py-24 text-center">
-              <svg className="w-16 h-16 mx-auto text-primary/20" viewBox="0 0 100 100">
-                <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-              </svg>
-              <h3 className="text-xl font-semibold text-foreground mt-4">No dishes found</h3>
-              <p className="text-muted-foreground mt-2 max-w-sm mx-auto">
-                We couldn't find any dishes matching your filters. Try a different category or search term.
-              </p>
+              <BeeLoader size={80} text="No dishes found..." />
               <button
                 onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
-                className="text-primary font-medium mt-4 hover:underline"
+                className="text-primary font-medium mt-6 hover:underline"
               >
                 Clear all filters
               </button>
@@ -112,6 +111,8 @@ const Menu = () => {
           )}
         </div>
       </section>
+
+      <HoneycombDivider count={5} />
 
       <Footer />
     </div>

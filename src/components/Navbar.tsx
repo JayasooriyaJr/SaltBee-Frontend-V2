@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { User, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 const navItems = [
   { path: "/", label: "Home", korean: "홈" },
@@ -15,12 +16,18 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          {/* Hex logo mark */}
-          <svg className="w-8 h-8 text-primary" viewBox="0 0 100 100">
+        <Link to="/" className="flex items-center gap-2 group">
+          {/* Animated hex logo mark */}
+          <motion.svg
+            className="w-8 h-8 text-primary"
+            viewBox="0 0 100 100"
+            whileHover={{ rotate: 60, scale: 1.1 }}
+            transition={{ duration: 0.4 }}
+          >
             <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" opacity="0.9" />
             <text x="50" y="58" textAnchor="middle" fontSize="30" fontWeight="bold" fill="hsl(40,20%,8%)">SB</text>
-          </svg>
+          </motion.svg>
+          
           <div>
             <span className="font-display text-xl font-bold text-primary">Salt Bee</span>
             <span className="block text-[10px] font-body text-muted-foreground tracking-wider">한국 식당</span>
