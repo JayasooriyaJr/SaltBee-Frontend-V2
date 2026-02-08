@@ -12,7 +12,7 @@ import HoneycombPattern from "@/components/HoneycombPattern";
 import ScrollReveal from "@/components/ScrollReveal";
 import BeeLoader from "@/components/BeeLoader";
 import HoneyDrip from "@/components/HoneyDrip";
-import FlyingBee from "@/components/FlyingBee";
+import FloatingBee from "@/components/FloatingBee";
 import HoneycombDivider from "@/components/HoneycombDivider";
 
 const signatureDishes = menuItems.filter((item) => item.popular).slice(0, 4);
@@ -38,8 +38,10 @@ const Index = () => {
     >
       <Navbar />
 
-      {/* Flying bee easter egg */}
-      <FlyingBee className="top-32" />
+      {/* Floating bees in hero */}
+      <FloatingBee className="top-[15%] right-[10%] z-20" size={32} delay={0} />
+      <FloatingBee className="bottom-[30%] left-[8%] z-20" size={24} delay={3} />
+      <FloatingBee className="top-[45%] right-[20%] z-20" size={20} delay={5} />
 
       {/* Hero */}
       <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
