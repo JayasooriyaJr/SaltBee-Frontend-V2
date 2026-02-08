@@ -24,27 +24,30 @@ const FloatingBee = ({
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
+      className="overflow-visible"
     >
       {/* Left wing */}
-      <ellipse
-        cx="22"
-        cy="22"
-        rx="10"
-        ry="6"
-        transform="rotate(-30 22 22)"
-        fill="hsl(42 90% 55% / 0.3)"
-        style={{ animation: "bee-wing 0.1s infinite" }}
-      />
+      <g className="animate-bee-wing" style={{ transformOrigin: "22px 28px" }}>
+        <ellipse
+          cx="22"
+          cy="22"
+          rx="10"
+          ry="6"
+          transform="rotate(-30 22 22)"
+          fill="hsl(42 90% 55% / 0.3)"
+        />
+      </g>
       {/* Right wing */}
-      <ellipse
-        cx="42"
-        cy="22"
-        rx="10"
-        ry="6"
-        transform="rotate(30 42 22)"
-        fill="hsl(42 90% 55% / 0.3)"
-        style={{ animation: "bee-wing 0.1s infinite" }}
-      />
+      <g className="animate-bee-wing" style={{ transformOrigin: "42px 28px" }}>
+        <ellipse
+          cx="42"
+          cy="22"
+          rx="10"
+          ry="6"
+          transform="rotate(30 42 22)"
+          fill="hsl(42 90% 55% / 0.3)"
+        />
+      </g>
       {/* Body */}
       <ellipse cx="32" cy="34" rx="11" ry="14" fill="hsl(42 90% 55%)" />
       {/* Stripes */}
