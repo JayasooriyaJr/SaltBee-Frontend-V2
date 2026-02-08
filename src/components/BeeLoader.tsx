@@ -20,9 +20,9 @@ const hexPoints = (s: number) => {
 type HexInfo = {
   cx: number;
   cy: number;
-  dist: number; // 0‑1 normalised distance from centre
+  dist: number;
   filled: boolean;
-  glowTier: number; // 0=none 1=soft 2=strong
+  glowTier: number;
   delay: number;
 };
 
@@ -39,7 +39,6 @@ function buildGrid(): HexInfo[] {
       const cy = r * ROW_OFFSET + (c % 2 === 1 ? ROW_OFFSET / 2 : 0);
       const dist = Math.hypot(cx - midX, cy - midY) / maxDist;
 
-      // cluster-based glow — centre hexes glow more
       const rng = pseudoRand(r * COLS + c);
       let glowTier = 0;
       const fillChance = dist < 0.3 ? 0.6 : dist < 0.55 ? 0.35 : 0.12;
@@ -52,14 +51,13 @@ function buildGrid(): HexInfo[] {
         dist,
         filled,
         glowTier,
-        delay: dist * 2.5 + rng * 0.8, // wave-like stagger
+        delay: dist * 2.5 + rng * 0.8,
       });
     }
   }
   return cells;
 }
 
-// deterministic pseudo-random so grid is stable per render
 function pseudoRand(seed: number) {
   let x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
   return x - Math.floor(x);
@@ -102,7 +100,7 @@ interface BeeLoaderProps {
 
 const BeeLoader = ({
   visible = true,
-  text = "Preparing the hive…",
+  text,
   onDone,
   className = "",
 }: BeeLoaderProps) => {
@@ -114,7 +112,6 @@ const BeeLoader = ({
 
   useEffect(() => {
     if (!visible && show) {
-      // allow exit animation
       const t = setTimeout(() => {
         setShow(false);
         onDone?.();
@@ -191,7 +188,7 @@ const BeeLoader = ({
                   : h.glowTier === 1
                   ? "hex-breathe"
                   : "hex-pulse";
-              const dur = 4 + h.dist * 2; // 4‑6s
+              const dur = 4 + h.dist * 2;
 
               return (
                 <g
@@ -201,7 +198,6 @@ const BeeLoader = ({
                     animation: `hex-fade-in .8s ease-out ${h.delay}s both`,
                   }}
                 >
-                  {/* glow layer behind filled hexes */}
                   {h.filled && (
                     <polygon
                       points={pts}
@@ -222,7 +218,6 @@ const BeeLoader = ({
                     />
                   )}
 
-                  {/* main hex */}
                   <polygon
                     points={pts}
                     fill={h.filled ? "url(#hex-fill-grad)" : "none"}
@@ -239,50 +234,17 @@ const BeeLoader = ({
             })}
           </svg>
 
-          {/* Centre content */}
-          <div className="relative z-10 flex flex-col items-center gap-5">
-            {/* Spinning hex ring */}
-            <motion.svg
-              width="80"
-              height="80"
-              viewBox="-45 -45 90 90"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          {/* Optional loading text */}
+          {text && (
+            <motion.p
+              className="relative z-10 text-sm tracking-[.2em] uppercase"
+              style={{ color: "hsl(42 60% 60%)" }}
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 2.5, repeat: Infinity }}
             >
-              <polygon
-                points={hexPoints(38)}
-                fill="none"
-                stroke="hsl(45 95% 55%)"
-                strokeWidth="1.2"
-                opacity="0.5"
-              />
-            </motion.svg>
-
-            {/* Bee icon */}
-            <motion.span
-              className="absolute text-3xl"
-              style={{ top: "22px" }}
-              animate={{ y: [0, -4, 0] }}
-              transition={{
-                duration: 1.2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              🐝
-            </motion.span>
-
-            {text && (
-              <motion.p
-                className="text-sm tracking-[.2em] uppercase"
-                style={{ color: "hsl(42 60% 60%)" }}
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 2.5, repeat: Infinity }}
-              >
-                {text}
-              </motion.p>
-            )}
-          </div>
+              {text}
+            </motion.p>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
