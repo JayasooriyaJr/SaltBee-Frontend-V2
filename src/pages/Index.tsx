@@ -26,11 +26,7 @@ const Index = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <BeeLoader size={140} text="Preparing the hive..." />
-      </div>
-    );
+    return <BeeLoader text="Preparing the hive…" />;
   }
 
   return (

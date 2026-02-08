@@ -100,7 +100,7 @@ const Menu = () => {
             </>
           ) : (
             <div className="py-24 text-center">
-              <BeeLoader size={80} text="No dishes found..." />
+              <p className="text-muted-foreground">No dishes found...</p>
               <button
                 onClick={() => { setActiveCategory("all"); setSearchQuery(""); }}
                 className="text-primary font-medium mt-6 hover:underline"
