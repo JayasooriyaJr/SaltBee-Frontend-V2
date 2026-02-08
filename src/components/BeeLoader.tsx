@@ -1,94 +1,291 @@
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
-/**
- * Beehive-shaped loading animation — 7 hexagons in a honeycomb cluster
- * that light up sequentially like honey filling cells.
- */
-const hexPositions = [
-  { x: 0, y: 0 },       // center
-  { x: 30, y: -17 },    // top-right
-  { x: 30, y: 17 },     // bottom-right
-  { x: 0, y: 34 },      // bottom
-  { x: -30, y: 17 },    // bottom-left
-  { x: -30, y: -17 },   // top-left
-  { x: 0, y: -34 },     // top
-];
+/* ─── hex math ─── */
+const HEX_W = 52;
+const HEX_H = 60;
+const COL_OFFSET = HEX_W * 0.75;
+const ROW_OFFSET = HEX_H;
+const COLS = 18;
+const ROWS = 14;
 
-const HexCell = ({ x, y, delay }: { x: number; y: number; delay: number }) => (
-  <motion.g transform={`translate(${x}, ${y})`}>
-    <motion.polygon
-      points="15,0 7.5,-13 -7.5,-13 -15,0 -7.5,13 7.5,13"
-      fill="hsl(var(--primary))"
-      stroke="hsl(var(--primary))"
-      strokeWidth="1.5"
-      initial={{ opacity: 0.1, scale: 0.8 }}
-      animate={{
-        opacity: [0.1, 0.9, 0.1],
-        scale: [0.8, 1, 0.8],
-      }}
-      transition={{
-        duration: 1.4,
-        delay,
-        repeat: Infinity,
-        ease: "easeInOut",
-      }}
-    />
-  </motion.g>
-);
+const hexPoints = (s: number) => {
+  const a = Array.from({ length: 6 }, (_, i) => {
+    const angle = (Math.PI / 3) * i - Math.PI / 6;
+    return `${(s * Math.cos(angle)).toFixed(2)},${(s * Math.sin(angle)).toFixed(2)}`;
+  });
+  return a.join(" ");
+};
 
+type HexInfo = {
+  cx: number;
+  cy: number;
+  dist: number; // 0‑1 normalised distance from centre
+  filled: boolean;
+  glowTier: number; // 0=none 1=soft 2=strong
+  delay: number;
+};
+
+function buildGrid(): HexInfo[] {
+  const midX = ((COLS - 1) * COL_OFFSET) / 2;
+  const midY = ((ROWS - 1) * ROW_OFFSET) / 2;
+  const maxDist = Math.hypot(midX, midY);
+
+  const cells: HexInfo[] = [];
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cx = c * COL_OFFSET;
+      const cy = r * ROW_OFFSET + (c % 2 === 1 ? ROW_OFFSET / 2 : 0);
+      const dist = Math.hypot(cx - midX, cy - midY) / maxDist;
+
+      // cluster-based glow — centre hexes glow more
+      const rng = pseudoRand(r * COLS + c);
+      let glowTier = 0;
+      const fillChance = dist < 0.3 ? 0.6 : dist < 0.55 ? 0.35 : 0.12;
+      const filled = rng < fillChance;
+      if (filled) glowTier = dist < 0.35 ? 2 : 1;
+
+      cells.push({
+        cx,
+        cy,
+        dist,
+        filled,
+        glowTier,
+        delay: dist * 2.5 + rng * 0.8, // wave-like stagger
+      });
+    }
+  }
+  return cells;
+}
+
+// deterministic pseudo-random so grid is stable per render
+function pseudoRand(seed: number) {
+  let x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/* ─── CSS keyframes injected once ─── */
+const STYLE_ID = "bee-loader-kf";
+function ensureKeyframes() {
+  if (document.getElementById(STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = STYLE_ID;
+  style.textContent = `
+@keyframes hex-breathe {
+  0%,100%{ opacity:.25; transform:scale(.95) }
+  50%{ opacity:.85; transform:scale(1) }
+}
+@keyframes hex-glow {
+  0%,100%{ opacity:.4; filter:brightness(1) }
+  50%{ opacity:.9; filter:brightness(1.35) }
+}
+@keyframes hex-pulse {
+  0%,100%{ opacity:.15; transform:scale(.92) }
+  50%{ opacity:.55; transform:scale(1.02) }
+}
+@keyframes hex-fade-in {
+  from { opacity:0; transform:scale(.85) }
+  to   { opacity:1; transform:scale(1) }
+}
+`;
+  document.head.appendChild(style);
+}
+
+/* ─── Component ─── */
 interface BeeLoaderProps {
-  size?: number;
+  visible?: boolean;
   text?: string;
+  onDone?: () => void;
   className?: string;
 }
 
-const BeeLoader = ({ size = 120, text, className = "" }: BeeLoaderProps) => {
+const BeeLoader = ({
+  visible = true,
+  text = "Preparing the hive…",
+  onDone,
+  className = "",
+}: BeeLoaderProps) => {
+  const [show, setShow] = useState(visible);
+
+  useEffect(() => {
+    ensureKeyframes();
+  }, []);
+
+  useEffect(() => {
+    if (!visible && show) {
+      // allow exit animation
+      const t = setTimeout(() => {
+        setShow(false);
+        onDone?.();
+      }, 600);
+      return () => clearTimeout(t);
+    }
+    if (visible) setShow(true);
+  }, [visible]);
+
+  const grid = useMemo(buildGrid, []);
+
+  const svgW = (COLS - 1) * COL_OFFSET + HEX_W;
+  const svgH = (ROWS - 1) * ROW_OFFSET + HEX_H;
+
+  if (!show && !visible) return null;
+
   return (
-    <div className={`flex flex-col items-center justify-center gap-4 ${className}`}>
-      <div className="relative" style={{ width: size, height: size }}>
-        {/* Spinning outer ring */}
-        <motion.svg
-          className="absolute inset-0"
-          viewBox="-50 -50 100 100"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-        >
-          <polygon
-            points="45,0 22.5,-39 -22.5,-39 -45,0 -22.5,39 22.5,39"
-            fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth="0.8"
-            opacity="0.2"
-          />
-        </motion.svg>
-
-        {/* Honeycomb cluster */}
-        <svg className="absolute inset-0" viewBox="-50 -50 100 100">
-          {hexPositions.map((pos, i) => (
-            <HexCell key={i} x={pos.x} y={pos.y} delay={i * 0.15} />
-          ))}
-        </svg>
-
-        {/* Animated bee icon in center */}
+    <AnimatePresence>
+      {(show || visible) && (
         <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          animate={{ y: [0, -3, 0] }}
-          transition={{ duration: 0.8, repeat: Infinity, ease: "easeInOut" }}
+          key="bee-loader"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6 }}
+          className={`fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden ${className}`}
+          style={{ background: "hsl(30 15% 8%)" }}
         >
-          <span className="text-lg">🐝</span>
-        </motion.div>
-      </div>
+          {/* Ambient warm spots */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `
+                radial-gradient(ellipse 50% 45% at 50% 50%, hsla(42,80%,40%,.14) 0%, transparent 100%),
+                radial-gradient(circle 35% at 30% 60%, hsla(32,70%,35%,.10) 0%, transparent 100%),
+                radial-gradient(circle 30% at 72% 35%, hsla(45,85%,50%,.08) 0%, transparent 100%)
+              `,
+            }}
+          />
 
-      {text && (
-        <motion.p
-          className="text-sm text-muted-foreground tracking-wider"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          {text}
-        </motion.p>
+          {/* Vignette */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 65% at 50% 50%, transparent 40%, hsla(30,15%,4%,.85) 100%)",
+            }}
+          />
+
+          {/* Hex grid */}
+          <svg
+            viewBox={`-${HEX_W / 2} -${HEX_H / 2} ${svgW + HEX_W} ${svgH + HEX_H}`}
+            className="absolute inset-0 w-full h-full"
+            preserveAspectRatio="xMidYMid slice"
+          >
+            <defs>
+              <linearGradient id="hex-fill-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(42 90% 50%)" />
+                <stop offset="100%" stopColor="hsl(32 80% 35%)" />
+              </linearGradient>
+              <filter id="hex-blur">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+              </filter>
+              <filter id="hex-blur-strong">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="6" />
+              </filter>
+            </defs>
+
+            {grid.map((h, i) => {
+              const pts = hexPoints(HEX_W * 0.38);
+              const anim =
+                h.glowTier === 2
+                  ? "hex-glow"
+                  : h.glowTier === 1
+                  ? "hex-breathe"
+                  : "hex-pulse";
+              const dur = 4 + h.dist * 2; // 4‑6s
+
+              return (
+                <g
+                  key={i}
+                  transform={`translate(${h.cx},${h.cy})`}
+                  style={{
+                    animation: `hex-fade-in .8s ease-out ${h.delay}s both`,
+                  }}
+                >
+                  {/* glow layer behind filled hexes */}
+                  {h.filled && (
+                    <polygon
+                      points={pts}
+                      fill={
+                        h.glowTier === 2
+                          ? "hsl(45 95% 65%)"
+                          : "hsl(42 75% 45%)"
+                      }
+                      filter={
+                        h.glowTier === 2
+                          ? "url(#hex-blur-strong)"
+                          : "url(#hex-blur)"
+                      }
+                      style={{
+                        animation: `${anim} ${dur}s ease-in-out ${h.delay}s infinite`,
+                        transformOrigin: "center",
+                      }}
+                    />
+                  )}
+
+                  {/* main hex */}
+                  <polygon
+                    points={pts}
+                    fill={h.filled ? "url(#hex-fill-grad)" : "none"}
+                    stroke="hsl(42 75% 45%)"
+                    strokeWidth={h.filled ? "0.6" : "0.4"}
+                    opacity={h.filled ? undefined : 0.18}
+                    style={{
+                      animation: `${anim} ${dur}s ease-in-out ${h.delay}s infinite`,
+                      transformOrigin: "center",
+                    }}
+                  />
+                </g>
+              );
+            })}
+          </svg>
+
+          {/* Centre content */}
+          <div className="relative z-10 flex flex-col items-center gap-5">
+            {/* Spinning hex ring */}
+            <motion.svg
+              width="80"
+              height="80"
+              viewBox="-45 -45 90 90"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+            >
+              <polygon
+                points={hexPoints(38)}
+                fill="none"
+                stroke="hsl(45 95% 55%)"
+                strokeWidth="1.2"
+                opacity="0.5"
+              />
+            </motion.svg>
+
+            {/* Bee icon */}
+            <motion.span
+              className="absolute text-3xl"
+              style={{ top: "22px" }}
+              animate={{ y: [0, -4, 0] }}
+              transition={{
+                duration: 1.2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            >
+              🐝
+            </motion.span>
+
+            {text && (
+              <motion.p
+                className="text-sm tracking-[.2em] uppercase"
+                style={{ color: "hsl(42 60% 60%)" }}
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+              >
+                {text}
+              </motion.p>
+            )}
+          </div>
+        </motion.div>
       )}
-    </div>
+    </AnimatePresence>
   );
 };
 
