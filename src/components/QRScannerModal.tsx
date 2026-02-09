@@ -17,30 +17,24 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
     const [error, setError] = useState<string | null>(null);
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const [isScanning, setIsScanning] = useState(false);
-    const [isProcessingScan, setIsProcessingScan] = useState(false); // Prevent duplicate scans
-    const lastScannedRef = useRef<string | null>(null); // Track last scanned code
+    const isProcessingScanRef = useRef(false); // Use ref instead of state for immediate updates
+    const lastScannedRef = useRef<string | null>(null);
 
     const handleScan = (decodedText: string) => {
-        // Prevent duplicate scans
-        if (isProcessingScan || lastScannedRef.current === decodedText) {
+        // Prevent duplicate scans using ref (synchronous check)
+        if (isProcessingScanRef.current || lastScannedRef.current === decodedText) {
+            console.log('Duplicate scan prevented:', decodedText);
             return;
         }
 
         try {
-            console.log('QR Code scanned:', decodedText); // Debug log
+            console.log('QR Code scanned:', decodedText);
 
-            // Mark as processing
-            setIsProcessingScan(true);
+            // Mark as processing immediately (synchronous)
+            isProcessingScanRef.current = true;
             lastScannedRef.current = decodedText;
 
             // Extract table number from QR code
-            // Support multiple formats:
-            // - "TABLE-5", "TABLE5", "table-5", "table5"
-            // - "5", "05", "10"
-            // - "Table 5", "Table: 5"
-            // - Any text containing a number
-
-            // First, try to extract a number from the text
             const numberMatch = decodedText.match(/\d+/);
 
             if (numberMatch) {
@@ -53,36 +47,35 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                 if (scannerRef.current && isScanning) {
                     scannerRef.current.stop().then(() => {
                         setIsScanning(false);
-                        setIsProcessingScan(false);
+                        isProcessingScanRef.current = false;
                         lastScannedRef.current = null;
                         onClose();
                         navigate('/menu');
                     }).catch(err => {
                         console.error('Error stopping scanner:', err);
-                        setIsProcessingScan(false);
+                        isProcessingScanRef.current = false;
                         lastScannedRef.current = null;
                         onClose();
                         navigate('/menu');
                     });
                 } else {
-                    setIsProcessingScan(false);
+                    isProcessingScanRef.current = false;
                     lastScannedRef.current = null;
                     onClose();
                     navigate('/menu');
                 }
             } else {
-                // If no number found, show what was scanned for debugging
                 console.error('No number found in QR code:', decodedText);
                 setError(`Invalid QR code. Scanned: "${decodedText.substring(0, 50)}"`);
                 toast.error('No table number found in QR code');
-                setIsProcessingScan(false);
+                isProcessingScanRef.current = false;
                 lastScannedRef.current = null;
             }
         } catch (err) {
             console.error('Error processing QR code:', err);
             setError('Error processing QR code');
             toast.error('Error processing QR code');
-            setIsProcessingScan(false);
+            isProcessingScanRef.current = false;
             lastScannedRef.current = null;
         }
     };
@@ -151,17 +144,17 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
         if (scannerRef.current && isScanning) {
             scannerRef.current.stop().then(() => {
                 setIsScanning(false);
-                setIsProcessingScan(false);
+                isProcessingScanRef.current = false;
                 lastScannedRef.current = null;
                 onClose();
             }).catch(err => {
                 console.error('Error stopping scanner:', err);
-                setIsProcessingScan(false);
+                isProcessingScanRef.current = false;
                 lastScannedRef.current = null;
                 onClose();
             });
         } else {
-            setIsProcessingScan(false);
+            isProcessingScanRef.current = false;
             lastScannedRef.current = null;
             onClose();
         }
