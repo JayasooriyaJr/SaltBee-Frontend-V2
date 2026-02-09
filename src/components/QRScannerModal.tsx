@@ -3,7 +3,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { useOrder } from '@/contexts/OrderContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
 interface QRScannerModalProps {
@@ -14,6 +14,7 @@ interface QRScannerModalProps {
 const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
     const { setTableNumber, setOrderType } = useOrder();
     const navigate = useNavigate();
+    const location = useLocation();
     const [error, setError] = useState<string | null>(null);
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const [isScanning, setIsScanning] = useState(false);
@@ -60,26 +61,38 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                 setTableNumber(table);
                 setOrderType('dine-in');
 
-                // Show loading toast
-                toast.loading('Processing...', { id: 'qr-scan-loading' });
-
                 // Close modal immediately
                 onClose();
 
-                // Navigate and show success notification AFTER navigation
-                setTimeout(() => {
-                    navigate('/menu');
+                // Check if we're already on the menu page
+                const isOnMenuPage = location.pathname === '/menu';
 
-                    // Show success notification after navigation completes
+                if (isOnMenuPage) {
+                    // Already on menu page - just show success notification immediately
+                    toast.success(`Table ${table} selected!`);
+
+                    // Reset processing state
+                    isProcessingScanRef.current = false;
+                    lastScannedRef.current = null;
+                } else {
+                    // Not on menu page - show loading, navigate, then show success
+                    toast.loading('Processing...', { id: 'qr-scan-loading' });
+
+                    // Navigate and show success notification AFTER navigation
                     setTimeout(() => {
-                        toast.dismiss('qr-scan-loading');
-                        toast.success(`Table ${table} selected!`);
+                        navigate('/menu');
 
-                        // Reset processing state
-                        isProcessingScanRef.current = false;
-                        lastScannedRef.current = null;
-                    }, 300);
-                }, 100);
+                        // Show success notification after navigation completes
+                        setTimeout(() => {
+                            toast.dismiss('qr-scan-loading');
+                            toast.success(`Table ${table} selected!`);
+
+                            // Reset processing state
+                            isProcessingScanRef.current = false;
+                            lastScannedRef.current = null;
+                        }, 300);
+                    }, 100);
+                }
             } else {
                 console.error('No number found in QR code:', decodedText);
                 setError(`Invalid QR code. Scanned: "${decodedText.substring(0, 50)}"`);
