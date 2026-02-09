@@ -21,19 +21,9 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
     const lastScannedRef = useRef<string | null>(null);
 
     const handleScan = (decodedText: string) => {
-        const now = Date.now();
-
-        // CRITICAL: Timestamp-based debounce - prevent any scans within 2 seconds
-        if (lastScannedRef.current === decodedText &&
-            isProcessingScanRef.current &&
-            (now - (scannerRef.current as any).lastScanTime < 2000)) {
-            console.log('Duplicate scan blocked by timestamp:', decodedText);
-            return;
-        }
-
-        // Double-check with ref
+        // Prevent duplicate scans using ref (synchronous check)
         if (isProcessingScanRef.current) {
-            console.log('Duplicate scan blocked by ref:', decodedText);
+            console.log('Duplicate scan blocked - already processing');
             return;
         }
 
@@ -44,27 +34,19 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
             isProcessingScanRef.current = true;
             lastScannedRef.current = decodedText;
 
-            // Store timestamp
-            if (scannerRef.current) {
-                (scannerRef.current as any).lastScanTime = now;
-            }
-
             // Extract table number from QR code
             const numberMatch = decodedText.match(/\d+/);
 
             if (numberMatch) {
                 const table = numberMatch[0];
 
-                // CRITICAL: Stop scanner IMMEDIATELY and aggressively
+                // Stop scanner immediately
                 if (scannerRef.current && isScanning) {
-                    // First, mark as not scanning to prevent new scans
                     setIsScanning(false);
 
-                    // Clear the scanner to prevent any more callbacks
                     const scanner = scannerRef.current;
                     scannerRef.current = null;
 
-                    // Stop the scanner (this is async but we don't wait)
                     scanner.stop()
                         .then(() => {
                             console.log('Scanner stopped successfully');
@@ -72,37 +54,32 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                         .catch(err => {
                             console.error('Error stopping scanner:', err);
                         });
-
-                    // Update state immediately
-                    setTableNumber(table);
-                    setOrderType('dine-in');
-
-                    // Show notification ONCE
-                    toast.success(`Table ${table} selected!`);
-
-                    // Close modal immediately
-                    onClose();
-
-                    // Navigate after a short delay to ensure scanner is fully stopped
-                    setTimeout(() => {
-                        navigate('/menu');
-                        // Reset after navigation
-                        setTimeout(() => {
-                            isProcessingScanRef.current = false;
-                            lastScannedRef.current = null;
-                        }, 500);
-                    }, 100);
-                } else {
-                    // Scanner not running, proceed normally
-                    setTableNumber(table);
-                    setOrderType('dine-in');
-                    toast.success(`Table ${table} selected!`);
-
-                    isProcessingScanRef.current = false;
-                    lastScannedRef.current = null;
-                    onClose();
-                    navigate('/menu');
                 }
+
+                // Update state immediately
+                setTableNumber(table);
+                setOrderType('dine-in');
+
+                // Show loading toast
+                toast.loading('Processing...', { id: 'qr-scan-loading' });
+
+                // Close modal immediately
+                onClose();
+
+                // Navigate and show success notification AFTER navigation
+                setTimeout(() => {
+                    navigate('/menu');
+
+                    // Show success notification after navigation completes
+                    setTimeout(() => {
+                        toast.dismiss('qr-scan-loading');
+                        toast.success(`Table ${table} selected!`);
+
+                        // Reset processing state
+                        isProcessingScanRef.current = false;
+                        lastScannedRef.current = null;
+                    }, 300);
+                }, 100);
             } else {
                 console.error('No number found in QR code:', decodedText);
                 setError(`Invalid QR code. Scanned: "${decodedText.substring(0, 50)}"`);
