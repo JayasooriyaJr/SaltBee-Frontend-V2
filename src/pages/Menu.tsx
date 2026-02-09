@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { menuItems, categories, type MenuCategory } from "@/data/menuData";
 import DishCard from "@/components/DishCard";
 import Navbar from "@/components/Navbar";
@@ -8,10 +8,24 @@ import ScrollReveal from "@/components/ScrollReveal";
 import HoneyDrip from "@/components/HoneyDrip";
 import HoneycombDivider from "@/components/HoneycombDivider";
 import BeeLoader from "@/components/BeeLoader";
+import { useOrder } from "@/contexts/OrderContext";
+import QRScannerModal from "@/components/QRScannerModal";
+import { Button } from "@/components/ui/button";
+import FloatingQRButton from "@/components/FloatingQRButton";
 
 const Menu = () => {
   const [activeCategory, setActiveCategory] = useState<MenuCategory>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const { tableNumber, orderType, isCheckoutLocked, setTableNumber, setOrderType } = useOrder();
+  const [showQRModal, setShowQRModal] = useState(false);
+
+  const handleClearTable = () => {
+    if (!isCheckoutLocked) {
+      setTableNumber(null);
+      setOrderType(null);
+      setShowQRModal(true);
+    }
+  };
 
   const filteredItems = menuItems.filter((item) => {
     const matchesCategory = activeCategory === "all" || item.category === activeCategory;
@@ -28,20 +42,14 @@ const Menu = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative py-24 text-center overflow-hidden bg-secondary">
-        <div className="relative z-10">
+      <section className="relative py-16 sm:py-24 text-center overflow-hidden bg-secondary">
+        <div className="relative z-10 px-4">
           <ScrollReveal>
-            <div className="inline-flex items-center gap-3 mb-4">
-              <svg className="w-5 h-5 text-primary" viewBox="0 0 100 100">
-                <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-              </svg>
-              <span className="text-xs tracking-[0.3em] text-primary font-medium uppercase">메뉴</span>
-              <svg className="w-5 h-5 text-primary" viewBox="0 0 100 100">
-                <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-              </svg>
+            <div className="inline-flex items-center gap-3 mb-3 sm:mb-4">
+              <span className="text-[10px] sm:text-xs tracking-[0.3em] text-primary font-medium uppercase">메뉴</span>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground">Our Menu</h1>
-            <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-foreground">Our Menu</h1>
+            <p className="text-muted-foreground text-sm sm:text-base mt-3 sm:mt-4 max-w-lg mx-auto px-4">
               Authentic Korean dishes crafted with traditional recipes and the finest ingredients.
             </p>
           </ScrollReveal>
@@ -69,11 +77,10 @@ const Menu = () => {
                 <button
                   key={cat.value}
                   onClick={() => setActiveCategory(cat.value)}
-                  className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    activeCategory === cat.value
-                      ? "bg-primary text-primary-foreground shadow-[0_0_15px_-3px_hsl(var(--primary)/0.3)]"
-                      : "bg-card text-muted-foreground border border-border hover:border-primary/30 hover:text-foreground"
-                  }`}
+                  className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeCategory === cat.value
+                    ? "bg-primary text-primary-foreground shadow-[0_0_15px_-3px_hsl(var(--primary)/0.3)]"
+                    : "bg-card text-muted-foreground border border-border hover:border-primary/30 hover:text-foreground"
+                    }`}
                 >
                   {cat.label} <span className="text-[10px] opacity-70">{cat.korean}</span>
                 </button>
@@ -82,6 +89,44 @@ const Menu = () => {
           </div>
         </div>
       </section>
+
+      {/* Table Indicator */}
+      {(tableNumber || orderType === 'takeaway') && (
+        <section className="sticky top-[calc(4rem+4.5rem)] z-30 bg-primary/10 backdrop-blur border-b border-primary/20 py-3">
+          <div className="container">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {tableNumber && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      Table: <span className="text-primary font-bold text-lg">{tableNumber}</span>
+                    </span>
+                    <span className="text-xs text-muted-foreground">• Dine-in</span>
+                  </div>
+                )}
+                {orderType === 'takeaway' && !tableNumber && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">
+                      Order Type: <span className="text-primary font-bold">Takeaway</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+              {!isCheckoutLocked && (
+                <Button
+                  onClick={handleClearTable}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear Table
+                </Button>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Menu Grid */}
       <section className="py-12">
@@ -115,6 +160,15 @@ const Menu = () => {
       <HoneycombDivider />
 
       <Footer />
+
+      {/* QR Scanner Modal */}
+      <QRScannerModal
+        open={showQRModal}
+        onClose={() => setShowQRModal(false)}
+      />
+
+      {/* Floating QR Button */}
+      <FloatingQRButton />
     </div>
   );
 };

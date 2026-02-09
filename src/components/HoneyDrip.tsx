@@ -12,8 +12,8 @@ const drips = [
   { left: "88%", height: 14, delay: 0.3, width: 3 },
 ];
 
-const HoneyDrip = ({ className = "" }: { className?: string }) => (
-  <div className={`relative w-full h-10 overflow-hidden ${className}`}>
+const HoneyDrip = ({ className = "", bgColor = "" }: { className?: string; bgColor?: string }) => (
+  <div className={`relative w-full h-10 overflow-hidden ${bgColor} ${className}`}>
     {/* Shimmer line */}
     <motion.div
       className="absolute top-0 left-0 right-0 h-px"

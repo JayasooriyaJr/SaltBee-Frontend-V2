@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
-import { Flame, Star } from "lucide-react";
+import { Flame, Star, ShoppingBag, Check } from "lucide-react";
 import type { MenuItem } from "@/data/menuData";
+import { useCart } from "@/contexts/CartContext";
+import { useOrder } from "@/contexts/OrderContext";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import OrderTypeModal from "./OrderTypeModal";
 
 interface DishCardProps {
   item: MenuItem;
@@ -8,6 +13,45 @@ interface DishCardProps {
 }
 
 const DishCard = ({ item, index }: DishCardProps) => {
+  const { addItem } = useCart();
+  const { tableNumber, orderType } = useOrder();
+  const [isAdded, setIsAdded] = useState(false);
+  const [showOrderTypeModal, setShowOrderTypeModal] = useState(false);
+
+  const handleAddToCart = () => {
+    // Check if table number or order type is set
+    if (!tableNumber && orderType !== 'takeaway') {
+      // Show order type selection modal
+      setShowOrderTypeModal(true);
+      return;
+    }
+
+    // Proceed with adding to cart
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      category: item.category,
+    });
+
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 2000);
+  };
+
+  const handleOrderTypeSelected = () => {
+    // After order type is selected, add the item to cart
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      category: item.category,
+    });
+
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 2000);
+  };
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -38,18 +82,6 @@ const DishCard = ({ item, index }: DishCardProps) => {
             </span>
           )}
         </div>
-
-        {/* Price hex */}
-        <div className="absolute top-3 right-3">
-          <div className="relative">
-            <svg className="w-14 h-14 text-primary" viewBox="0 0 100 100">
-              <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-            </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-primary-foreground font-bold text-sm">
-              ${item.price.toFixed(0)}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Content */}
@@ -67,7 +99,36 @@ const DishCard = ({ item, index }: DishCardProps) => {
             <span className="text-[10px] text-muted-foreground border border-border rounded-full px-2 py-0.5">🌿 Vegetarian</span>
           )}
         </div>
+
+        {/* Add to Order Button */}
+        <Button
+          onClick={handleAddToCart}
+          disabled={isAdded}
+          className={`w-full mt-4 gap-2 transition-all duration-300 ${isAdded
+            ? 'bg-green-600 hover:bg-green-600'
+            : ''
+            }`}
+        >
+          {isAdded ? (
+            <>
+              <Check className="h-4 w-4" />
+              Added to Order
+            </>
+          ) : (
+            <>
+              <ShoppingBag className="h-4 w-4" />
+              Add to Order
+            </>
+          )}
+        </Button>
       </div>
+
+      {/* Order Type Selection Modal */}
+      <OrderTypeModal
+        open={showOrderTypeModal}
+        onClose={() => setShowOrderTypeModal(false)}
+        onOrderTypeSelected={handleOrderTypeSelected}
+      />
     </motion.div>
   );
 };

@@ -22,7 +22,7 @@ const About = () => {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative h-[45vh] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[40vh] sm:h-[45vh] flex items-center justify-center overflow-hidden">
         <motion.div
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
@@ -32,10 +32,10 @@ const About = () => {
         />
         <div className="absolute inset-0 bg-background/70" />
         <HoneycombPattern className="text-primary" />
-        <div className="relative z-10 text-center">
+        <div className="relative z-10 text-center px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <span className="text-xs tracking-[0.3em] text-primary uppercase">우리의 이야기</span>
-            <h1 className="text-5xl md:text-7xl font-bold text-foreground mt-3">Our Story</h1>
+            <span className="text-[10px] sm:text-xs tracking-[0.3em] text-primary uppercase">우리의 이야기</span>
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold text-foreground mt-2 sm:mt-3">Our Story</h1>
           </motion.div>
         </div>
       </section>
@@ -43,20 +43,20 @@ const About = () => {
       <HoneyDrip />
 
       {/* Story Content */}
-      <section className="py-20">
-        <div className="container max-w-2xl text-center space-y-8">
+      <section className="py-12 sm:py-16 md:py-20">
+        <div className="container max-w-2xl text-center space-y-6 sm:space-y-8 px-4">
           <ScrollReveal>
-            <p className="text-muted-foreground leading-relaxed text-lg">
+            <p className="text-muted-foreground leading-relaxed text-sm sm:text-base md:text-lg">
               Salt Bee Korean Kitchen was founded with a simple mission: to bring the authentic taste of Korean home cooking to every table. Our name, "Salt Bee," draws inspiration from the Korean tradition of 손맛 (son-mat) — the unique flavor that comes from cooking with heart and soul.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={100}>
-            <p className="text-muted-foreground leading-relaxed text-lg">
+            <p className="text-muted-foreground leading-relaxed text-sm sm:text-base md:text-lg">
               Our story begins in a small kitchen in Seoul, where our founder's grandmother would spend hours perfecting her kimchi recipe. That same dedication to quality and authenticity now lives in every dish we serve.
             </p>
           </ScrollReveal>
           <ScrollReveal delay={200}>
-            <p className="text-muted-foreground leading-relaxed text-lg">
+            <p className="text-muted-foreground leading-relaxed text-sm sm:text-base md:text-lg">
               Today, we invite you to experience Korean cuisine the way it was meant to be: made with fresh ingredients, prepared with care, and served with warmth. Welcome to our family's table.
             </p>
           </ScrollReveal>
@@ -66,24 +66,24 @@ const About = () => {
       <HoneycombDivider />
 
       {/* Interior image band */}
-      <section className="relative h-[35vh]">
+      <section className="relative h-[30vh] sm:h-[35vh]">
         <img src={interiorImage} alt="Restaurant interior" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-background/50" />
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center px-4">
           <ScrollReveal>
-            <p className="font-display text-3xl text-primary italic">"Come for the food, stay for the warmth"</p>
+            <p className="font-display text-2xl sm:text-3xl text-primary italic text-center">"Come for the food, stay for the warmth"</p>
           </ScrollReveal>
         </div>
       </section>
 
-      <HoneyDrip />
+      <HoneyDrip bgColor="bg-secondary" />
 
       {/* Values */}
-      <section className="relative py-24 bg-secondary overflow-hidden">
-        <div className="container relative z-10 text-center">
+      <section className="relative py-16 sm:py-20 md:py-24 bg-secondary overflow-hidden">
+        <div className="container relative z-10 text-center px-4">
           <ScrollReveal>
-            <span className="text-xs tracking-[0.3em] text-primary uppercase">우리의 가치</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mt-3">Our Values</h2>
+            <span className="text-[10px] sm:text-xs tracking-[0.3em] text-primary uppercase">우리의 가치</span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mt-2 sm:mt-3">Our Values</h2>
           </ScrollReveal>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-14">
             {values.map((v, i) => (

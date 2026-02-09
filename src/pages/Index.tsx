@@ -14,6 +14,7 @@ import BeeLoader from "@/components/BeeLoader";
 import HoneyDrip from "@/components/HoneyDrip";
 import FloatingBee from "@/components/FloatingBee";
 import HoneycombDivider from "@/components/HoneycombDivider";
+import FloatingQRButton from "@/components/FloatingQRButton";
 
 const signatureDishes = menuItems.filter((item) => item.popular).slice(0, 4);
 
@@ -44,7 +45,7 @@ const Index = () => {
       <FloatingBee className="top-[45%] right-[20%] z-20" size={20} delay={5} />
 
       {/* Hero */}
-      <section className="relative h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[85vh] md:h-[90vh] flex items-center justify-center overflow-hidden">
         <motion.div
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
@@ -55,30 +56,30 @@ const Index = () => {
         <div className="absolute inset-0 bg-background/75" />
         <HoneycombPattern className="text-primary" />
 
-        <div className="relative z-10 text-center px-4">
+        <div className="relative z-10 text-center px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="inline-flex items-center gap-3 mb-6"
+            className="inline-flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6"
           >
-            <div className="h-px w-12 bg-primary/50" />
-            <span className="text-xs tracking-[0.4em] text-primary font-medium uppercase">
+            <div className="h-px w-8 sm:w-12 bg-primary/50" />
+            <span className="text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] text-primary font-medium uppercase">
               Korean Kitchen · 한국 식당
             </span>
-            <div className="h-px w-12 bg-primary/50" />
+            <div className="h-px w-8 sm:w-12 bg-primary/50" />
           </motion.div>
 
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.5 }}
-            className="text-6xl md:text-9xl font-bold leading-none"
+            className="text-5xl sm:text-6xl md:text-9xl font-bold leading-none"
           >
             <span className="text-accent">Salt</span>{" "}
             <span className="text-primary">Bee</span>
             <motion.span
-              className="inline-block ml-2 text-5xl md:text-7xl"
+              className="inline-block ml-1 sm:ml-2 text-4xl sm:text-5xl md:text-7xl"
               animate={{ y: [0, -6, 0], rotate: [0, 10, -10, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
             >
@@ -91,20 +92,20 @@ const Index = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.9 }}
           >
-            <p className="mt-6 text-foreground/60 font-body text-lg max-w-xl mx-auto leading-relaxed">
+            <p className="mt-4 sm:mt-6 text-foreground/60 font-body text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed px-2">
               Experience the authentic flavors of Korea — sizzling BBQ, rich stews, and handcrafted dishes made with 손맛, the taste of loving hands.
             </p>
-            <div className="flex flex-wrap gap-4 justify-center mt-10">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center mt-6 sm:mt-10 px-4">
               <Link
                 to="/menu"
-                className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold hover:bg-honey-dark transition-all duration-300 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)]"
+                className="group inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-honey-dark transition-all duration-300 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)] text-sm sm:text-base"
               >
                 View Menu
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/about"
-                className="inline-flex items-center gap-2 border border-primary/30 text-primary px-8 py-4 rounded-lg font-semibold hover:bg-primary/10 transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 border border-primary/30 text-primary px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary/10 transition-all duration-300 text-sm sm:text-base"
               >
                 ⬡ Our Story
               </Link>
@@ -130,43 +131,37 @@ const Index = () => {
       </section>
 
       {/* Honey drip transition */}
-      <HoneyDrip />
+      <HoneyDrip bgColor="bg-secondary" />
 
       {/* Signature Dishes */}
-      <section className="relative py-28 bg-secondary overflow-hidden">
-        <div className="container relative z-10">
+      <section className="relative py-16 sm:py-20 md:py-28 bg-secondary overflow-hidden">
+        <div className="container relative z-10 px-4">
           <ScrollReveal>
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-3 mb-4">
-                <svg className="w-5 h-5 text-primary" viewBox="0 0 100 100">
-                  <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-                </svg>
-                <span className="text-xs tracking-[0.3em] text-primary font-medium uppercase">
+            <div className="text-center mb-10 sm:mb-12 md:mb-16">
+              <div className="inline-flex items-center gap-3 mb-3 sm:mb-4">
+                <span className="text-[10px] sm:text-xs tracking-[0.3em] text-primary font-medium uppercase">
                   Chef's Selection · 대표 메뉴
                 </span>
-                <svg className="w-5 h-5 text-primary" viewBox="0 0 100 100">
-                  <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-                </svg>
               </div>
-              <h2 className="text-4xl md:text-6xl font-bold text-foreground">
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground px-4">
                 Signature Dishes
               </h2>
-              <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
+              <p className="text-muted-foreground text-sm sm:text-base mt-3 sm:mt-4 max-w-lg mx-auto px-4">
                 Our most beloved creations, each crafted with time-honored Korean culinary traditions and the finest ingredients.
               </p>
             </div>
           </ScrollReveal>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {signatureDishes.map((item, i) => (
               <DishCard key={item.id} item={item} index={i} />
             ))}
           </div>
 
-          <ScrollReveal className="text-center mt-14">
+          <ScrollReveal className="text-center mt-10 sm:mt-14">
             <Link
               to="/menu"
-              className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-semibold hover:bg-honey-dark transition-all duration-300 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)]"
+              className="group inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-honey-dark transition-all duration-300 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)] text-sm sm:text-base"
             >
               View Full Menu
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -204,21 +199,22 @@ const Index = () => {
       <HoneyDrip />
 
       {/* Our Story */}
-      <section className="relative py-28 bg-background overflow-hidden">
-        <div className="container relative z-10">
-          <div className="grid md:grid-cols-2 gap-16 items-start">
+      <section className="relative py-16 sm:py-20 md:py-28 bg-background overflow-hidden">
+        {/* Floating bees */}
+        <FloatingBee className="top-[20%] right-[15%] z-20" size={28} delay={1} />
+        <FloatingBee className="bottom-[25%] left-[12%] z-20" size={22} delay={4} />
+
+        <div className="container relative z-10 px-4">
+          <div className="grid md:grid-cols-2 gap-10 sm:gap-12 md:gap-16 items-start">
             <ScrollReveal>
-              <div className="inline-flex items-center gap-2 mb-4">
-                <svg className="w-4 h-4 text-primary" viewBox="0 0 100 100">
-                  <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" fill="currentColor" />
-                </svg>
-                <span className="text-xs tracking-[0.3em] text-primary font-medium uppercase">Our Philosophy</span>
+              <div className="inline-flex items-center gap-2 mb-3 sm:mb-4">
+                <span className="text-[10px] sm:text-xs tracking-[0.3em] text-primary font-medium uppercase">Our Philosophy</span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground">Our Story</h2>
-              <p className="text-muted-foreground mt-6 leading-relaxed">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground">Our Story</h2>
+              <p className="text-muted-foreground text-sm sm:text-base mt-4 sm:mt-6 leading-relaxed">
                 Salt Bee Korean Kitchen was born from a simple dream: to share the authentic flavors of Korean home cooking with our community. Our name, inspired by the Korean tradition of seasoning with care, represents our commitment to crafting dishes that nourish both body and soul.
               </p>
-              <p className="text-muted-foreground mt-4 leading-relaxed">
+              <p className="text-muted-foreground text-sm sm:text-base mt-3 sm:mt-4 leading-relaxed">
                 From our grandmother's cherished kimchi recipe to our chef's innovative takes on classic dishes, every plate tells a story of Korean culinary heritage.
               </p>
               <div className="mt-8 p-4 border-l-2 border-primary bg-card/50 rounded-r-lg">
@@ -265,6 +261,9 @@ const Index = () => {
       <HoneycombDivider />
 
       <Footer />
+
+      {/* Floating QR Button */}
+      <FloatingQRButton />
     </motion.div>
   );
 };
