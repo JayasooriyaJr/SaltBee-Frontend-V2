@@ -39,26 +39,43 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
 
             if (numberMatch) {
                 const table = numberMatch[0];
-                setTableNumber(table);
-                setOrderType('dine-in');
-                toast.success(`Table ${table} selected!`);
 
-                // Stop scanner before closing
+                // CRITICAL: Stop scanner FIRST before doing anything else
                 if (scannerRef.current && isScanning) {
-                    scannerRef.current.stop().then(() => {
-                        setIsScanning(false);
-                        isProcessingScanRef.current = false;
-                        lastScannedRef.current = null;
-                        onClose();
-                        navigate('/menu');
-                    }).catch(err => {
-                        console.error('Error stopping scanner:', err);
-                        isProcessingScanRef.current = false;
-                        lastScannedRef.current = null;
-                        onClose();
-                        navigate('/menu');
-                    });
+                    scannerRef.current.stop()
+                        .then(() => {
+                            setIsScanning(false);
+
+                            // Now safe to update state and show notifications
+                            setTableNumber(table);
+                            setOrderType('dine-in');
+                            toast.success(`Table ${table} selected!`);
+
+                            // Reset and navigate
+                            isProcessingScanRef.current = false;
+                            lastScannedRef.current = null;
+                            onClose();
+                            navigate('/menu');
+                        })
+                        .catch(err => {
+                            console.error('Error stopping scanner:', err);
+
+                            // Still proceed even if stop fails
+                            setTableNumber(table);
+                            setOrderType('dine-in');
+                            toast.success(`Table ${table} selected!`);
+
+                            isProcessingScanRef.current = false;
+                            lastScannedRef.current = null;
+                            onClose();
+                            navigate('/menu');
+                        });
                 } else {
+                    // Scanner not running, proceed normally
+                    setTableNumber(table);
+                    setOrderType('dine-in');
+                    toast.success(`Table ${table} selected!`);
+
                     isProcessingScanRef.current = false;
                     lastScannedRef.current = null;
                     onClose();

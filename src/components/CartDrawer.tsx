@@ -11,7 +11,7 @@ interface CartDrawerProps {
 }
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
-    const { items, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
+    const { items, updateQuantity, removeItem, totalPrice, totalItems, clearCart } = useCart();
 
     return (
         <AnimatePresence>
@@ -37,7 +37,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                     >
                         {/* Header */}
                         <div className="flex-shrink-0 px-6 py-5 border-b border-border bg-secondary/30">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-3">
                                 <div>
                                     <h2 className="font-display text-2xl font-bold text-foreground flex items-center gap-2">
                                         <ShoppingBag className="h-6 w-6 text-primary" />
@@ -58,6 +58,19 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                                     <X className="h-5 w-5" />
                                 </Button>
                             </div>
+
+                            {/* Clear All Button */}
+                            {items.length > 0 && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={clearCart}
+                                    className="w-full gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Clear All Items
+                                </Button>
+                            )}
                         </div>
 
                         {/* Cart Items */}
@@ -108,7 +121,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                                                             variant="ghost"
                                                             size="icon"
                                                             onClick={() => removeItem(item.id)}
-                                                            className="h-8 w-8 -mt-1 -mr-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+                                                            className="h-8 w-8 -mt-1 -mr-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>
