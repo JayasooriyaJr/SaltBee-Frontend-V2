@@ -68,12 +68,17 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                 const isOnMenuPage = location.pathname === '/menu';
 
                 if (isOnMenuPage) {
-                    // Already on menu page - just show success notification immediately
-                    toast.success(`Table ${table} selected!`);
+                    // Already on menu page - force a page refresh
+                    // Show loading toast
+                    toast.loading('Processing...', { id: 'qr-scan-loading' });
 
-                    // Reset processing state
-                    isProcessingScanRef.current = false;
-                    lastScannedRef.current = null;
+                    // Store the table number in sessionStorage so we can show notification after refresh
+                    sessionStorage.setItem('qr-scan-success', table);
+
+                    // Force page refresh after a short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 100);
                 } else {
                     // Not on menu page - show loading, navigate, then show success
                     toast.loading('Processing...', { id: 'qr-scan-loading' });
@@ -108,6 +113,20 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
             lastScannedRef.current = null;
         }
     };
+
+    // Check for QR scan success after page refresh
+    useEffect(() => {
+        const qrScanSuccess = sessionStorage.getItem('qr-scan-success');
+        if (qrScanSuccess) {
+            // Clear the flag
+            sessionStorage.removeItem('qr-scan-success');
+
+            // Show success notification after a short delay to ensure page is fully loaded
+            setTimeout(() => {
+                toast.success(`Table ${qrScanSuccess} selected!`);
+            }, 500);
+        }
+    }, []);
 
     useEffect(() => {
         if (open && !isScanning) {
