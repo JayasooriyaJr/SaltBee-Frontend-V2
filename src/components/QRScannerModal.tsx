@@ -21,9 +21,19 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
     const lastScannedRef = useRef<string | null>(null);
 
     const handleScan = (decodedText: string) => {
-        // Prevent duplicate scans using ref (synchronous check)
-        if (isProcessingScanRef.current || lastScannedRef.current === decodedText) {
-            console.log('Duplicate scan prevented:', decodedText);
+        const now = Date.now();
+
+        // CRITICAL: Timestamp-based debounce - prevent any scans within 2 seconds
+        if (lastScannedRef.current === decodedText &&
+            isProcessingScanRef.current &&
+            (now - (scannerRef.current as any).lastScanTime < 2000)) {
+            console.log('Duplicate scan blocked by timestamp:', decodedText);
+            return;
+        }
+
+        // Double-check with ref
+        if (isProcessingScanRef.current) {
+            console.log('Duplicate scan blocked by ref:', decodedText);
             return;
         }
 
@@ -33,6 +43,11 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
             // Mark as processing immediately (synchronous)
             isProcessingScanRef.current = true;
             lastScannedRef.current = decodedText;
+
+            // Store timestamp
+            if (scannerRef.current) {
+                (scannerRef.current as any).lastScanTime = now;
+            }
 
             // Extract table number from QR code
             const numberMatch = decodedText.match(/\d+/);
@@ -45,8 +60,12 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                     // First, mark as not scanning to prevent new scans
                     setIsScanning(false);
 
+                    // Clear the scanner to prevent any more callbacks
+                    const scanner = scannerRef.current;
+                    scannerRef.current = null;
+
                     // Stop the scanner (this is async but we don't wait)
-                    scannerRef.current.stop()
+                    scanner.stop()
                         .then(() => {
                             console.log('Scanner stopped successfully');
                         })
@@ -58,7 +77,7 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                     setTableNumber(table);
                     setOrderType('dine-in');
 
-                    // Show notification
+                    // Show notification ONCE
                     toast.success(`Table ${table} selected!`);
 
                     // Close modal immediately
@@ -66,9 +85,12 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
 
                     // Navigate after a short delay to ensure scanner is fully stopped
                     setTimeout(() => {
-                        isProcessingScanRef.current = false;
-                        lastScannedRef.current = null;
                         navigate('/menu');
+                        // Reset after navigation
+                        setTimeout(() => {
+                            isProcessingScanRef.current = false;
+                            lastScannedRef.current = null;
+                        }, 500);
                     }, 100);
                 } else {
                     // Scanner not running, proceed normally
