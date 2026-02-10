@@ -3,10 +3,69 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useOrder } from "@/contexts/OrderContext";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { CreditCard, Wallet, MapPin, Clock, User } from "lucide-react";
 
 const Orders = () => {
     const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
+    const { tableNumber } = useOrder();
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [isTakeawayModalOpen, setIsTakeawayModalOpen] = useState(false);
+    const [takeawayDetails, setTakeawayDetails] = useState({
+        name: "",
+        address: "",
+        pickupTime: "",
+    });
+
+    const handleProceedToCheckout = () => {
+        if (tableNumber) {
+            setIsPaymentModalOpen(true);
+        } else {
+            setIsTakeawayModalOpen(true);
+        }
+    };
+
+    const handlePayNow = () => {
+        // Trigger card payment flow
+        console.log("Triggering card payment flow...");
+        toast.info("Proceeding to card payment...");
+        setIsPaymentModalOpen(false);
+        setIsTakeawayModalOpen(false);
+        // logic for card payment flow would go here
+    };
+
+    const handlePayLater = () => {
+        // Submit order to backend
+        console.log("Submitting order as Pay Later...");
+        // API call to submit order would go here
+
+        toast.success("Order submitted! Please pay at the counter.");
+        setIsPaymentModalOpen(false);
+        clearCart();
+    };
+
+    const handleTakeawaySubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!takeawayDetails.name || !takeawayDetails.address || !takeawayDetails.pickupTime) {
+            toast.error("Please fill in all fields");
+            return;
+        }
+        // Proceed to payment flow with details
+        handlePayNow();
+    };
 
     if (items.length === 0) {
         return (
@@ -143,11 +202,100 @@ const Orders = () => {
                                 </span>
                             </div>
                         </div>
-                        <Button size="lg" className="w-full gap-2">
+                        <Button size="lg" className="w-full gap-2" onClick={handleProceedToCheckout}>
                             Proceed to Checkout
                         </Button>
                     </div>
                 </div>
+
+                {/* Dine-in Payment Modal */}
+                <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Payment Options</DialogTitle>
+                            <DialogDescription>
+                                Choose how you would like to pay for your order.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid grid-cols-2 gap-4 py-4">
+                            <Button
+                                variant="outline"
+                                className="h-24 flex flex-col gap-2 hover:border-primary hover:text-primary transition-colors"
+                                onClick={handlePayNow}
+                            >
+                                <CreditCard className="h-8 w-8" />
+                                <span className="font-semibold">Pay Now</span>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="h-24 flex flex-col gap-2 hover:border-primary hover:text-primary transition-colors"
+                                onClick={handlePayLater}
+                            >
+                                <Wallet className="h-8 w-8" />
+                                <span className="font-semibold">Pay Later</span>
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Takeaway Form Modal */}
+                <Dialog open={isTakeawayModalOpen} onOpenChange={setIsTakeawayModalOpen}>
+                    <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                            <DialogTitle>Takeaway Details</DialogTitle>
+                            <DialogDescription>
+                                Please provide your details for pickup.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleTakeawaySubmit} className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Name</Label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="name"
+                                        placeholder="Your Name"
+                                        className="pl-9"
+                                        value={takeawayDetails.name}
+                                        onChange={(e) => setTakeawayDetails({ ...takeawayDetails, name: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="address">Full Address</Label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="address"
+                                        placeholder="Your Address"
+                                        className="pl-9"
+                                        value={takeawayDetails.address}
+                                        onChange={(e) => setTakeawayDetails({ ...takeawayDetails, address: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="pickupTime">Pickup Time</Label>
+                                <div className="relative">
+                                    <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="pickupTime"
+                                        type="time"
+                                        className="pl-9"
+                                        value={takeawayDetails.pickupTime}
+                                        onChange={(e) => setTakeawayDetails({ ...takeawayDetails, pickupTime: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter className="pt-4">
+                                <Button type="submit" size="lg" className="w-full gap-2">
+                                    <CreditCard className="h-4 w-4" />
+                                    Place Order & Pay Now
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
             </main>
             <Footer />
         </div>
