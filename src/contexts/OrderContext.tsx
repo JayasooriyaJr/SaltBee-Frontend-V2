@@ -1,6 +1,22 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { CartItem } from './CartContext';
 
 export type OrderType = 'dine-in' | 'takeaway' | null;
+
+export type OrderStatus = 'preparing' | 'ready' | 'served';
+
+export type PaymentStatus = 'paid' | 'pending';
+
+export interface ActiveOrder {
+    id: string;
+    items: CartItem[];
+    status: OrderStatus;
+    totalAmount: number;
+    timestamp: number;
+    orderType: OrderType;
+    tableNumber?: string;
+    paymentStatus: PaymentStatus;
+}
 
 interface OrderContextType {
     tableNumber: string | null;
@@ -10,6 +26,8 @@ interface OrderContextType {
     isCheckoutLocked: boolean;
     setIsCheckoutLocked: (locked: boolean) => void;
     resetOrder: () => void;
+    activeOrders: ActiveOrder[];
+    addActiveOrder: (items: CartItem[], total: number, paymentStatus: PaymentStatus) => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -28,6 +46,11 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [isCheckoutLocked, setIsCheckoutLocked] = useState<boolean>(() => {
         const saved = localStorage.getItem('saltbee-checkout-locked');
         return saved === 'true';
+    });
+
+    const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>(() => {
+        const saved = localStorage.getItem('saltbee-active-orders');
+        return saved ? JSON.parse(saved) : [];
     });
 
     // Persist to localStorage
@@ -51,6 +74,24 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         localStorage.setItem('saltbee-checkout-locked', String(isCheckoutLocked));
     }, [isCheckoutLocked]);
 
+    useEffect(() => {
+        localStorage.setItem('saltbee-active-orders', JSON.stringify(activeOrders));
+    }, [activeOrders]);
+
+    const addActiveOrder = (items: CartItem[], total: number, paymentStatus: PaymentStatus) => {
+        const newOrder: ActiveOrder = {
+            id: Math.random().toString(36).substring(2, 9),
+            items,
+            status: 'preparing',
+            totalAmount: total,
+            timestamp: Date.now(),
+            orderType,
+            tableNumber: tableNumber || undefined,
+            paymentStatus
+        };
+        setActiveOrders(prev => [newOrder, ...prev]);
+    };
+
     const resetOrder = () => {
         setTableNumber(null);
         setOrderType(null);
@@ -67,6 +108,8 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 isCheckoutLocked,
                 setIsCheckoutLocked,
                 resetOrder,
+                activeOrders,
+                addActiveOrder,
             }}
         >
             {children}

@@ -21,7 +21,7 @@ import { CreditCard, Wallet, MapPin, Clock, User } from "lucide-react";
 
 const Orders = () => {
     const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
-    const { tableNumber, orderType } = useOrder();
+    const { tableNumber, orderType, addActiveOrder } = useOrder();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isTakeawayModalOpen, setIsTakeawayModalOpen] = useState(false);
     const [takeawayDetails, setTakeawayDetails] = useState({
@@ -45,15 +45,24 @@ const Orders = () => {
     const handlePayNow = () => {
         // Trigger card payment flow
         console.log("Triggering card payment flow...");
+
+        // Add to active orders
+        addActiveOrder(items, totalPrice, 'paid');
+
         toast.info("Proceeding to card payment...");
         setIsPaymentModalOpen(false);
         setIsTakeawayModalOpen(false);
+        clearCart();
         // logic for card payment flow would go here
     };
 
     const handlePayLater = () => {
         // Submit order to backend
         console.log("Submitting order as Pay Later...");
+
+        // Add to active orders
+        addActiveOrder(items, totalPrice, 'pending');
+
         // API call to submit order would go here
 
         toast.success("Order submitted! Please pay at the counter.");

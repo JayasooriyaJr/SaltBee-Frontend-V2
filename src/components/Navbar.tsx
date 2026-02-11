@@ -4,7 +4,10 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import logo from "../assets/Saltbee_Red_Yellow_Logo.png";
 import { useCart } from "../contexts/CartContext";
+import { useOrder } from "../contexts/OrderContext";
 import CartDrawer from "./CartDrawer";
+import ActiveOrdersModal from "./ActiveOrdersModal";
+import { ClipboardList } from "lucide-react";
 
 const navItems = [
   { path: "/", label: "Home", korean: "홈" },
@@ -16,7 +19,9 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [activeOrdersOpen, setActiveOrdersOpen] = useState(false);
   const { totalItems } = useCart();
+  const { activeOrders } = useOrder();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
@@ -53,6 +58,20 @@ const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Active Orders Button */}
+          {activeOrders.length > 0 && (
+            <button
+              onClick={() => setActiveOrdersOpen(true)}
+              className="relative inline-flex items-center gap-2 rounded-md border border-primary/20 bg-primary/10 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+            >
+              <ClipboardList className="h-4 w-4" />
+              <span className="hidden sm:inline">View Orders</span>
+              <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground animate-pulse">
+                {activeOrders.length}
+              </span>
+            </button>
+          )}
+
           {/* Cart/Orders Button */}
           <button
             onClick={() => setCartOpen(true)}
@@ -92,6 +111,23 @@ const Navbar = () => {
               {item.label} <span className="text-primary/60 text-xs">{item.korean}</span>
             </Link>
           ))}
+          {activeOrders.length > 0 && (
+            <button
+              onClick={() => {
+                setMobileOpen(false);
+                setActiveOrdersOpen(true);
+              }}
+              className="flex w-full items-center justify-between text-sm border border-primary/20 bg-primary/5 rounded-md px-4 py-2 text-primary hover:bg-primary/10 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <ClipboardList className="h-4 w-4" />
+                View Active Orders
+              </span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                {activeOrders.length}
+              </span>
+            </button>
+          )}
           <button
             onClick={() => {
               setMobileOpen(false);
@@ -117,6 +153,9 @@ const Navbar = () => {
 
       {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+
+      {/* Active Orders Modal */}
+      <ActiveOrdersModal isOpen={activeOrdersOpen} onClose={() => setActiveOrdersOpen(false)} />
     </header>
   );
 };
