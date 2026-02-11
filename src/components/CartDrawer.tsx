@@ -1,4 +1,5 @@
 import { useCart } from "@/contexts/CartContext";
+import { useOrder } from "@/contexts/OrderContext";
 import { X, Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -12,6 +13,7 @@ interface CartDrawerProps {
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     const { items, updateQuantity, removeItem, totalPrice, totalItems, clearCart } = useCart();
+    const { orderType } = useOrder();
 
     return (
         <AnimatePresence>
@@ -200,12 +202,28 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                                     </div>
                                 </div>
 
-                                <Link to="/orders" onClick={onClose}>
-                                    <Button size="lg" className="w-full gap-2 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-shadow">
-                                        Proceed to Checkout
-                                        <ArrowRight className="h-5 w-5" />
-                                    </Button>
-                                </Link>
+                                {orderType ? (
+                                    <Link to="/orders" onClick={onClose}>
+                                        <Button size="lg" className="w-full gap-2 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-shadow">
+                                            Proceed to Checkout
+                                            <ArrowRight className="h-5 w-5" />
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Button
+                                            disabled
+                                            size="lg"
+                                            className="w-full gap-2 h-12 text-base font-semibold opacity-50 cursor-not-allowed"
+                                        >
+                                            Proceed to Checkout
+                                            <ArrowRight className="h-5 w-5" />
+                                        </Button>
+                                        <p className="text-xs text-center text-destructive font-medium">
+                                            Please select a dining option (Store or Takeaway) to proceed
+                                        </p>
+                                    </div>
+                                )}
 
                                 <button
                                     onClick={onClose}

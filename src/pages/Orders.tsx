@@ -21,7 +21,7 @@ import { CreditCard, Wallet, MapPin, Clock, User } from "lucide-react";
 
 const Orders = () => {
     const { items, updateQuantity, removeItem, totalPrice, clearCart } = useCart();
-    const { tableNumber } = useOrder();
+    const { tableNumber, orderType } = useOrder();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isTakeawayModalOpen, setIsTakeawayModalOpen] = useState(false);
     const [takeawayDetails, setTakeawayDetails] = useState({
@@ -31,6 +31,10 @@ const Orders = () => {
     });
 
     const handleProceedToCheckout = () => {
+        if (!orderType) {
+            toast.error("Please select a dining option first");
+            return;
+        }
         if (tableNumber) {
             setIsPaymentModalOpen(true);
         } else {
@@ -202,9 +206,20 @@ const Orders = () => {
                                 </span>
                             </div>
                         </div>
-                        <Button size="lg" className="w-full gap-2" onClick={handleProceedToCheckout}>
-                            Proceed to Checkout
-                        </Button>
+                        {orderType ? (
+                            <Button size="lg" className="w-full gap-2" onClick={handleProceedToCheckout}>
+                                Proceed to Checkout
+                            </Button>
+                        ) : (
+                            <div className="space-y-2">
+                                <Button disabled size="lg" className="w-full gap-2 opacity-50 cursor-not-allowed">
+                                    Proceed to Checkout
+                                </Button>
+                                <p className="text-xs text-center text-destructive font-medium">
+                                    Please select a dining option (Store or Takeaway) to proceed
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
