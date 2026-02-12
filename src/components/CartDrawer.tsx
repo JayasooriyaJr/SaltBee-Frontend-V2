@@ -13,7 +13,7 @@ interface CartDrawerProps {
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
     const { items, updateQuantity, removeItem, totalPrice, totalItems, clearCart } = useCart();
-    const { orderType } = useOrder();
+    const { orderType, sessionToken, addToOrder, isLoading } = useOrder();
 
     return (
         <AnimatePresence>
@@ -202,7 +202,23 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                                     </div>
                                 </div>
 
-                                {orderType ? (
+                                {orderType === 'dine-in' && sessionToken ? (
+                                    <Button
+                                        size="lg"
+                                        className="w-full gap-2 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-shadow"
+                                        onClick={async () => {
+                                            const success = await addToOrder(items);
+                                            if (success) {
+                                                clearCart();
+                                                onClose();
+                                            }
+                                        }}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? "Placing Order..." : "Place Order"}
+                                        {!isLoading && <ArrowRight className="h-5 w-5" />}
+                                    </Button>
+                                ) : orderType ? (
                                     <Link to="/orders" onClick={onClose}>
                                         <Button size="lg" className="w-full gap-2 h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-shadow">
                                             Proceed to Checkout

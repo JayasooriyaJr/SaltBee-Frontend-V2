@@ -3,7 +3,8 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { useOrder } from '@/contexts/OrderContext';
-import { sessionApi } from '@/services/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -14,6 +15,7 @@ interface QRScannerModalProps {
 
 const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
     const { setTableNumber, setOrderType, setSessionToken } = useOrder();
+    const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [error, setError] = useState<string | null>(null);
@@ -55,11 +57,15 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
 
                 try {
                     // Call Backend to Start Session
-                    // Only start if not already in a valid session for this table to avoid resetting? 
-                    // For now, always start new or re-join
-                    const response = await api.startSession(table, {
-                        guestName: "Guest", // Could prompt for this later
-                    });
+                    // Pre-fill user info if authenticated
+                    const sessionData = isAuthenticated && user ? {
+                        guestName: user.name,
+                        guestPhone: user.phone || undefined,
+                    } : {
+                        guestName: "Guest",
+                    };
+
+                    const response = await api.startSession(table, sessionData);
 
                     const { sessionToken, isGuest, tableId } = response.data;
 
@@ -67,7 +73,9 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                     setTableNumber(String(tableId));
                     setOrderType('dine-in');
 
-                    if (!isGuest) {
+                    if (!isGuest && isAuthenticated) {
+                        toast.success(`Welcome back, ${user?.name}! Table ${table} connected.`);
+                    } else if (!isGuest) {
                         toast.success(`Welcome back! Table ${table} connected.`);
                     } else {
                         toast.success(`Table ${table} connected as Guest.`);
@@ -82,10 +90,6 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                 } catch (apiError) {
                     console.error("Failed to start session:", apiError);
                     toast.error("Failed to connect to table session.");
-                    // Fallback local mode for demo/if backend fails?
-                    // setTableNumber(table); 
-                    // setOrderType('dine-in');
-                    // onClose();
                 } finally {
                     toast.dismiss(toastId);
                     isProcessingScanRef.current = false;

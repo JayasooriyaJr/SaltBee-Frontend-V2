@@ -1,16 +1,30 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CartItem } from './CartContext';
+import { sessionApi } from '@/services/api';
+import { toast } from 'sonner';
 
 export type OrderType = 'dine-in' | 'takeaway' | null;
 
-export type OrderStatus = 'preparing' | 'ready' | 'served';
+export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'SERVED' | 'COMPLETED' | 'CANCELLED';
 
 export type PaymentStatus = 'paid' | 'pending';
 
-export interface ActiveOrder {
-    id: string;
-    items: CartItem[];
+// Structure matching backend response for getCurrentOrder
+export interface ServerOrder {
+    orderId: number;
+    tableId: number;
+    items: any[];
+    totalAmount: number;
+    finalAmount: number;
     status: OrderStatus;
+    taxAmount?: number;
+    serviceChargeAmount?: number;
+}
+
+export interface ActiveOrder {
+    id: string; // client-side ID or server ID depending on usage
+    items: CartItem[];
+    status: string; // relaxed type to accommodate backend status strings
     totalAmount: number;
     timestamp: number;
     orderType: OrderType;
@@ -32,6 +46,13 @@ interface OrderContextType {
     setSessionToken: (token: string | null) => void;
     customerId: string | null;
     setCustomerId: (id: string | null) => void;
+
+    // New Session Methods
+    serverOrder: ServerOrder | null;
+    addToOrder: (items: CartItem[]) => Promise<boolean>;
+    requestBill: () => Promise<void>;
+    refreshOrder: () => Promise<void>;
+    isLoading: boolean;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -65,6 +86,10 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return localStorage.getItem('saltbee-customer-id') || null;
     });
 
+    // New State for Server Order
+    const [serverOrder, setServerOrder] = useState<ServerOrder | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
     // Persist to localStorage
     useEffect(() => {
         if (tableNumber) {
@@ -93,8 +118,11 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     useEffect(() => {
         if (sessionToken) {
             localStorage.setItem('saltbee-session-token', sessionToken);
+            // Auto-fetch active order when session token exists
+            refreshOrder();
         } else {
             localStorage.removeItem('saltbee-session-token');
+            setServerOrder(null);
         }
     }, [sessionToken]);
 
@@ -126,6 +154,64 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setIsCheckoutLocked(false);
         setSessionToken(null);
         setCustomerId(null);
+        setServerOrder(null);
+    };
+
+    // --- New Session Methods ---
+
+    const refreshOrder = async () => {
+        if (!tableNumber || !sessionToken) return;
+        try {
+            const response = await sessionApi.getCurrentOrder(tableNumber, sessionToken);
+            setServerOrder(response.data as ServerOrder);
+        } catch (error) {
+            console.error("Failed to fetch current order:", error);
+            // Optional: Handle invalid token by clearing session? 
+            // For now, just log to avoid auto-logout loops on transient errors
+        }
+    };
+
+    const addToOrder = async (items: CartItem[]): Promise<boolean> => {
+        if (!tableNumber || !sessionToken) {
+            toast.error("No active session found.");
+            return false;
+        }
+
+        setIsLoading(true);
+        try {
+            // Iterate and add items one by one
+            for (const item of items) {
+                const payload = {
+                    menuItemId: item.id,
+                    quantity: item.quantity,
+                    specialInstructions: "", // Future: Add note support in Cart
+                    modifiers: [] // Future: Add modifier support in Cart
+                };
+                await sessionApi.addItem(tableNumber, sessionToken, payload);
+            }
+
+            await refreshOrder();
+            toast.success("Order updated successfully!");
+            return true;
+        } catch (error) {
+            console.error("Failed to add items to order:", error);
+            toast.error("Failed to submit order. Please try again.");
+            return false;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const requestBill = async () => {
+        if (!tableNumber || !sessionToken) return;
+
+        try {
+            await sessionApi.requestBill(tableNumber, sessionToken);
+            toast.success("Bill requested. A staff member will be with you shortly.");
+        } catch (error) {
+            console.error("Failed to request bill:", error);
+            toast.error("Failed to request bill.");
+        }
     };
 
     return (
@@ -144,6 +230,12 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 setSessionToken,
                 customerId,
                 setCustomerId,
+                // New Exports
+                serverOrder,
+                addToOrder,
+                requestBill,
+                refreshOrder,
+                isLoading
             }}
         >
             {children}
