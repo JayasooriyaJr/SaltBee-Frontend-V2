@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import { api, type OrderPayload } from "@/services/api";
 import Footer from "@/components/Footer";
 import { useCart } from "@/contexts/CartContext";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
@@ -24,10 +25,23 @@ const Orders = () => {
     const { tableNumber, orderType, addActiveOrder } = useOrder();
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [isTakeawayModalOpen, setIsTakeawayModalOpen] = useState(false);
+    const [isOnlinePaymentModalOpen, setIsOnlinePaymentModalOpen] = useState(false);
+    const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = useState(false);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+    const navigate = useNavigate();
+
     const [takeawayDetails, setTakeawayDetails] = useState({
         name: "",
         address: "",
         pickupTime: "",
+    });
+
+    // Payment Form state
+    const [paymentDetails, setPaymentDetails] = useState({
+        cardNumber: "",
+        expiry: "",
+        cvc: "",
+        name: ""
     });
 
     const handleProceedToCheckout = () => {
@@ -43,31 +57,43 @@ const Orders = () => {
     };
 
     const handlePayNow = () => {
-        // Trigger card payment flow
-        console.log("Triggering card payment flow...");
-
-        // Add to active orders
-        addActiveOrder(items, totalPrice, 'paid');
-
-        toast.info("Proceeding to card payment...");
+        // Close other modals and open online payment modal
         setIsPaymentModalOpen(false);
         setIsTakeawayModalOpen(false);
-        clearCart();
-        // logic for card payment flow would go here
+        setIsOnlinePaymentModalOpen(true);
     };
 
-    const handlePayLater = () => {
-        // Submit order to backend
-        console.log("Submitting order as Pay Later...");
 
-        // Add to active orders
-        addActiveOrder(items, totalPrice, 'pending');
 
-        // API call to submit order would go here
+    // ... existing imports
 
-        toast.success("Order submitted! Please pay at the counter.");
-        setIsPaymentModalOpen(false);
-        clearCart();
+    const handlePayLater = async () => {
+        try {
+            const payload: OrderPayload = {
+                items: items.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                })),
+                totalPrice,
+                tableNumber: tableNumber ? String(tableNumber) : null,
+                orderType: orderType || 'dine-in', // Fallback, though check ensures it's set
+                paymentMethod: 'cash', // Assuming pay later means cash/card at counter
+                paymentStatus: 'pending'
+            };
+
+            await api.createOrder(payload);
+
+            addActiveOrder(items, totalPrice, 'pending');
+            toast.success("Order submitted! Please pay at the counter.");
+            setIsPaymentModalOpen(false);
+            clearCart();
+            navigate('/menu');
+        } catch (error) {
+            console.error("Order submission failed", error);
+            toast.error("Failed to submit order. Please try again.");
+        }
     };
 
     const handleTakeawaySubmit = (e: React.FormEvent) => {
@@ -78,6 +104,54 @@ const Orders = () => {
         }
         // Proceed to payment flow with details
         handlePayNow();
+    };
+
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!paymentDetails.cardNumber || !paymentDetails.expiry || !paymentDetails.cvc || !paymentDetails.name) {
+            toast.error("Please fill in all payment details");
+            return;
+        }
+
+        setIsProcessingPayment(true);
+
+        try {
+            const payload: OrderPayload = {
+                items: items.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity
+                })),
+                totalPrice,
+                tableNumber: tableNumber ? String(tableNumber) : null,
+                orderType: orderType || 'dine-in',
+                paymentMethod: 'online',
+                paymentStatus: 'paid',
+                customerDetails: orderType === 'takeaway' ? takeawayDetails : { name: paymentDetails.name }
+            };
+
+            await api.createOrder(payload);
+
+            // Add to active orders
+            addActiveOrder(items, totalPrice, 'paid');
+
+            setIsOnlinePaymentModalOpen(false);
+            setIsPaymentSuccessModalOpen(true);
+        } catch (error) {
+            console.error("Payment failed", error);
+            toast.error("Payment processing failed. Please try again.");
+        } finally {
+            setIsProcessingPayment(false);
+        }
+    };
+
+    const handlePaymentSuccessClose = () => {
+        setIsPaymentSuccessModalOpen(false);
+        clearCart();
+        navigate("/menu");
+        toast.success("Thank you for your order!");
     };
 
     if (items.length === 0) {
@@ -318,6 +392,109 @@ const Orders = () => {
                                 </Button>
                             </DialogFooter>
                         </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Online Payment Modal */}
+                <Dialog open={isOnlinePaymentModalOpen} onOpenChange={setIsOnlinePaymentModalOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Secure Online Payment</DialogTitle>
+                            <DialogDescription>
+                                Enter your card details to complete the payment.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handlePaymentSubmit} className="space-y-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="cardName">Cardholder Name</Label>
+                                <Input
+                                    id="cardName"
+                                    placeholder="John Doe"
+                                    value={paymentDetails.name}
+                                    onChange={(e) => setPaymentDetails({ ...paymentDetails, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="cardNumber">Card Number</Label>
+                                <div className="relative">
+                                    <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="cardNumber"
+                                        placeholder="0000 0000 0000 0000"
+                                        className="pl-9"
+                                        value={paymentDetails.cardNumber}
+                                        onChange={(e) => setPaymentDetails({ ...paymentDetails, cardNumber: e.target.value })}
+                                        required
+                                        maxLength={19}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="expiry">Expiry Date</Label>
+                                    <Input
+                                        id="expiry"
+                                        placeholder="MM/YY"
+                                        value={paymentDetails.expiry}
+                                        onChange={(e) => setPaymentDetails({ ...paymentDetails, expiry: e.target.value })}
+                                        required
+                                        maxLength={5}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="cvc">CVC</Label>
+                                    <Input
+                                        id="cvc"
+                                        placeholder="123"
+                                        value={paymentDetails.cvc}
+                                        onChange={(e) => setPaymentDetails({ ...paymentDetails, cvc: e.target.value })}
+                                        required
+                                        maxLength={3}
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter className="pt-4">
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    className="w-full gap-2"
+                                    disabled={isProcessingPayment}
+                                >
+                                    {isProcessingPayment ? (
+                                        <>Processing...</>
+                                    ) : (
+                                        <>Make Payment ${(totalPrice * 1.1).toFixed(2)}</>
+                                    )}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Payment Success Modal */}
+                <Dialog open={isPaymentSuccessModalOpen} onOpenChange={() => { }}>
+                    <DialogContent className="sm:max-w-sm text-center">
+                        <div className="py-6 flex flex-col items-center justify-center space-y-4">
+                            <div className="h-16 w-16 bg-primary/20 rounded-full flex items-center justify-center mb-2">
+                                <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className="w-6 h-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <DialogTitle className="text-2xl font-bold">Payment Successful!</DialogTitle>
+                            <DialogDescription className="text-center">
+                                Your order has been placed successfully. A receipt has been sent to your email.
+                            </DialogDescription>
+                            <Button
+                                className="w-full mt-4"
+                                size="lg"
+                                onClick={handlePaymentSuccessClose}
+                            >
+                                Okay
+                            </Button>
+                        </div>
                     </DialogContent>
                 </Dialog>
             </main>

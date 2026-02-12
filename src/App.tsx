@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Menu from "./pages/Menu";
 import About from "./pages/About";
 import Auth from "./pages/Auth";
+import { AuthProvider } from "./contexts/AuthContext";
 import Orders from "./pages/Orders";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
@@ -20,21 +21,23 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <OrderProvider>
-        <CartProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/menu" element={<Menu />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </CartProvider>
-      </OrderProvider>
+      <AuthProvider>
+        <OrderProvider>
+          <CartProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/menu" element={<Menu />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/orders" element={<Orders />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </CartProvider>
+        </OrderProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

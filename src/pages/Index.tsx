@@ -4,7 +4,7 @@ import { Heart, Leaf, Shield, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import heroImage from "@/assets/hero-korean.jpg";
 import interiorImage from "@/assets/restaurant-interior.jpg";
-import { menuItems } from "@/data/menuData";
+import { api, type MenuItem } from "@/services/api";
 import DishCard from "@/components/DishCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,14 +16,24 @@ import FloatingBee from "@/components/FloatingBee";
 import HoneycombDivider from "@/components/HoneycombDivider";
 import FloatingQRButton from "@/components/FloatingQRButton";
 
-const signatureDishes = menuItems.filter((item) => item.popular).slice(0, 4);
-
 const Index = () => {
   const [loading, setLoading] = useState(true);
+  const [signatureDishes, setSignatureDishes] = useState<MenuItem[]>([]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 3500);
-    return () => clearTimeout(timer);
+    const initData = async () => {
+      try {
+        const response = await api.getMenuItems();
+        const popular = response.data.filter((item) => item.popular).slice(0, 4);
+        setSignatureDishes(popular);
+      } catch (error) {
+        console.error("Failed to fetch signature dishes", error);
+      } finally {
+        // Ensure minimum loading time for animation
+        setTimeout(() => setLoading(false), 2000);
+      }
+    };
+    initData();
   }, []);
 
   if (loading) {

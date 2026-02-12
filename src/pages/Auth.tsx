@@ -1,12 +1,40 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import interiorImage from "@/assets/restaurant-interior.jpg";
-
+import { useAuth } from "@/contexts/AuthContext";
+import { useOrder } from "@/contexts/OrderContext";
+import { toast } from "sonner";
 
 const Auth = () => {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { login } = useAuth();
+  const { sessionToken } = useOrder();
+  const navigate = useNavigate();
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      if (mode === "signin") {
+        await login({ email, password }, sessionToken || undefined);
+        navigate('/menu');
+      } else {
+        // Placeholder for signup logic
+        toast.info("Signup functionality to be implemented");
+      }
+    } catch (error) {
+      toast.error("Authentication failed. Please check credentials.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -36,23 +64,21 @@ const Auth = () => {
           <div className="flex mt-6 border border-border rounded-md overflow-hidden">
             <button
               onClick={() => setMode("signin")}
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                mode === "signin" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-              }`}
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === "signin" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
             >
               Sign In
             </button>
             <button
               onClick={() => setMode("signup")}
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${
-                mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
-              }`}
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === "signup" ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                }`}
             >
               Sign Up
             </button>
           </div>
 
-          <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <form className="mt-6 space-y-4" onSubmit={handleAuthSubmit}>
             {mode === "signup" && (
               <div>
                 <label className="text-sm font-medium text-foreground">Full Name</label>
@@ -67,7 +93,14 @@ const Auth = () => {
               <label className="text-sm font-medium text-foreground">Email Address</label>
               <div className="relative mt-1">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input type="email" placeholder="john@example.com" className="w-full pl-10 pr-4 py-2.5 rounded-md border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                <input
+                  type="email"
+                  placeholder="john@example.com"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-md border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
             </div>
 
@@ -84,6 +117,9 @@ const Auth = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder={mode === "signup" ? "Create a strong password" : "••••••••"}
                   className="w-full pl-10 pr-10 py-2.5 rounded-md border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -94,8 +130,12 @@ const Auth = () => {
               )}
             </div>
 
-            <button type="submit" className="w-full py-3 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-honey-dark transition-colors">
-              {mode === "signin" ? "Sign In to Account" : "Create Account"}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 rounded-md bg-primary text-primary-foreground font-semibold hover:bg-honey-dark transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Processing..." : (mode === "signin" ? "Sign In to Account" : "Create Account")}
             </button>
           </form>
 

@@ -3,6 +3,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { useOrder } from '@/contexts/OrderContext';
+import { sessionApi } from '@/services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -12,7 +13,7 @@ interface QRScannerModalProps {
 }
 
 const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
-    const { setTableNumber, setOrderType } = useOrder();
+    const { setTableNumber, setOrderType, setSessionToken } = useOrder();
     const navigate = useNavigate();
     const location = useLocation();
     const [error, setError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
     const isProcessingScanRef = useRef(false); // Use ref instead of state for immediate updates
     const lastScannedRef = useRef<string | null>(null);
 
-    const handleScan = (decodedText: string) => {
+    const handleScan = async (decodedText: string) => {
         // Prevent duplicate scans using ref (synchronous check)
         if (isProcessingScanRef.current) {
             console.log('Duplicate scan blocked - already processing');
@@ -44,60 +45,52 @@ const QRScannerModal = ({ open, onClose }: QRScannerModalProps) => {
                 // Stop scanner immediately
                 if (scannerRef.current && isScanning) {
                     setIsScanning(false);
-
                     const scanner = scannerRef.current;
                     scannerRef.current = null;
-
-                    scanner.stop()
-                        .then(() => {
-                            console.log('Scanner stopped successfully');
-                        })
-                        .catch(err => {
-                            console.error('Error stopping scanner:', err);
-                        });
+                    await scanner.stop().catch(console.error);
                 }
 
-                // Update state immediately
-                setTableNumber(table);
-                setOrderType('dine-in');
+                // Show loading toast
+                const toastId = toast.loading('Starting session...');
 
-                // Close modal immediately
-                onClose();
+                try {
+                    // Call Backend to Start Session
+                    // Only start if not already in a valid session for this table to avoid resetting? 
+                    // For now, always start new or re-join
+                    const response = await api.startSession(table, {
+                        guestName: "Guest", // Could prompt for this later
+                    });
 
-                // Check if we're already on the menu page
-                const isOnMenuPage = location.pathname === '/menu';
+                    const { sessionToken, isGuest, tableId } = response.data;
 
-                if (isOnMenuPage) {
-                    // Already on menu page - force a page refresh
-                    // Show loading toast
-                    toast.loading('Processing...', { id: 'qr-scan-loading' });
+                    setSessionToken(sessionToken);
+                    setTableNumber(String(tableId));
+                    setOrderType('dine-in');
 
-                    // Store the table number in sessionStorage so we can show notification after refresh
-                    sessionStorage.setItem('qr-scan-success', table);
+                    if (!isGuest) {
+                        toast.success(`Welcome back! Table ${table} connected.`);
+                    } else {
+                        toast.success(`Table ${table} connected as Guest.`);
+                    }
 
-                    // Force page refresh after a short delay
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 100);
-                } else {
-                    // Not on menu page - show loading, navigate, then show success
-                    toast.loading('Processing...', { id: 'qr-scan-loading' });
+                    onClose();
 
-                    // Navigate and show success notification AFTER navigation
-                    setTimeout(() => {
+                    // Navigate if needed
+                    if (location.pathname !== '/menu') {
                         navigate('/menu');
-
-                        // Show success notification after navigation completes
-                        setTimeout(() => {
-                            toast.dismiss('qr-scan-loading');
-                            toast.success(`Table ${table} selected!`);
-
-                            // Reset processing state
-                            isProcessingScanRef.current = false;
-                            lastScannedRef.current = null;
-                        }, 300);
-                    }, 100);
+                    }
+                } catch (apiError) {
+                    console.error("Failed to start session:", apiError);
+                    toast.error("Failed to connect to table session.");
+                    // Fallback local mode for demo/if backend fails?
+                    // setTableNumber(table); 
+                    // setOrderType('dine-in');
+                    // onClose();
+                } finally {
+                    toast.dismiss(toastId);
+                    isProcessingScanRef.current = false;
                 }
+
             } else {
                 console.error('No number found in QR code:', decodedText);
                 setError(`Invalid QR code. Scanned: "${decodedText.substring(0, 50)}"`);

@@ -28,6 +28,10 @@ interface OrderContextType {
     resetOrder: () => void;
     activeOrders: ActiveOrder[];
     addActiveOrder: (items: CartItem[], total: number, paymentStatus: PaymentStatus) => void;
+    sessionToken: string | null;
+    setSessionToken: (token: string | null) => void;
+    customerId: string | null;
+    setCustomerId: (id: string | null) => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -51,6 +55,14 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [activeOrders, setActiveOrders] = useState<ActiveOrder[]>(() => {
         const saved = localStorage.getItem('saltbee-active-orders');
         return saved ? JSON.parse(saved) : [];
+    });
+
+    const [sessionToken, setSessionToken] = useState<string | null>(() => {
+        return localStorage.getItem('saltbee-session-token') || null;
+    });
+
+    const [customerId, setCustomerId] = useState<string | null>(() => {
+        return localStorage.getItem('saltbee-customer-id') || null;
     });
 
     // Persist to localStorage
@@ -78,6 +90,22 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         localStorage.setItem('saltbee-active-orders', JSON.stringify(activeOrders));
     }, [activeOrders]);
 
+    useEffect(() => {
+        if (sessionToken) {
+            localStorage.setItem('saltbee-session-token', sessionToken);
+        } else {
+            localStorage.removeItem('saltbee-session-token');
+        }
+    }, [sessionToken]);
+
+    useEffect(() => {
+        if (customerId) {
+            localStorage.setItem('saltbee-customer-id', customerId);
+        } else {
+            localStorage.removeItem('saltbee-customer-id');
+        }
+    }, [customerId]);
+
     const addActiveOrder = (items: CartItem[], total: number, paymentStatus: PaymentStatus) => {
         const newOrder: ActiveOrder = {
             id: Math.random().toString(36).substring(2, 9),
@@ -96,6 +124,8 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         setTableNumber(null);
         setOrderType(null);
         setIsCheckoutLocked(false);
+        setSessionToken(null);
+        setCustomerId(null);
     };
 
     return (
@@ -110,6 +140,10 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                 resetOrder,
                 activeOrders,
                 addActiveOrder,
+                sessionToken,
+                setSessionToken,
+                customerId,
+                setCustomerId,
             }}
         >
             {children}

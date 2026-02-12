@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Flame, Star, ShoppingBag, Check } from "lucide-react";
-import type { MenuItem } from "@/data/menuData";
+import { type MenuItem } from "@/services/api";
 import { useCart } from "@/contexts/CartContext";
 import { useOrder } from "@/contexts/OrderContext";
 import { useState } from "react";

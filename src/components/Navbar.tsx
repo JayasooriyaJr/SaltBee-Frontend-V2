@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import logo from "../assets/Saltbee_Red_Yellow_Logo.png";
 import { useCart } from "../contexts/CartContext";
 import { useOrder } from "../contexts/OrderContext";
+import { useAuth } from "../contexts/AuthContext";
 import CartDrawer from "./CartDrawer";
 import ActiveOrdersModal from "./ActiveOrdersModal";
 import { ClipboardList } from "lucide-react";
@@ -22,6 +23,7 @@ const Navbar = () => {
   const [activeOrdersOpen, setActiveOrdersOpen] = useState(false);
   const { totalItems } = useCart();
   const { activeOrders } = useOrder();
+  const { isAuthenticated, logout, user } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur">
@@ -86,13 +88,27 @@ const Navbar = () => {
             )}
           </button>
 
-          <Link
-            to="/auth"
-            className="hidden md:inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <User className="h-4 w-4" />
-            Sign In
-          </Link>
+          {isAuthenticated ? (
+            <div className="hidden md:inline-flex items-center gap-4">
+              <span className="text-sm font-medium text-foreground">
+                Welcome{user?.name ? `, ${user.name}` : ''}
+              </span>
+              <button
+                onClick={logout}
+                className="items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/auth"
+              className="hidden md:inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              <User className="h-4 w-4" />
+              Sign In
+            </Link>
+          )}
           <button className="md:hidden text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -145,9 +161,21 @@ const Navbar = () => {
               </span>
             )}
           </button>
-          <Link to="/auth" onClick={() => setMobileOpen(false)} className="block text-sm bg-primary text-primary-foreground rounded-md px-4 py-2 text-center">
-            Sign In
-          </Link>
+          {isAuthenticated ? (
+            <button
+              onClick={() => {
+                logout();
+                setMobileOpen(false);
+              }}
+              className="block w-full text-left text-sm bg-secondary text-foreground rounded-md px-4 py-2"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link to="/auth" onClick={() => setMobileOpen(false)} className="block text-sm bg-primary text-primary-foreground rounded-md px-4 py-2 text-center">
+              Sign In
+            </Link>
+          )}
         </div>
       )}
 

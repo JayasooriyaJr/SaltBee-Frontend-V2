@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, X } from "lucide-react";
-import { menuItems, categories, type MenuCategory } from "@/data/menuData";
+import { categories, type MenuCategory } from "@/data/menuData";
+import { api, type MenuItem } from "@/services/api";
 import DishCard from "@/components/DishCard";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -18,6 +19,25 @@ const Menu = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { tableNumber, orderType, isCheckoutLocked, setTableNumber, setOrderType } = useOrder();
   const [showQRModal, setShowQRModal] = useState(false);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const response = await api.getMenuItems();
+        setMenuItems(response.data);
+      } catch (err) {
+        console.error("Failed to fetch menu:", err);
+        setError("Failed to load menu items. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMenu();
+  }, []);
 
   const handleClearTable = () => {
     if (!isCheckoutLocked) {
@@ -131,7 +151,16 @@ const Menu = () => {
       {/* Menu Grid */}
       <section className="py-12">
         <div className="container">
-          {filteredItems.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center py-24">
+              <BeeLoader />
+            </div>
+          ) : error ? (
+            <div className="text-center py-24">
+              <p className="text-destructive mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </div>
+          ) : filteredItems.length > 0 ? (
             <>
               <p className="text-sm text-muted-foreground mb-6">
                 Showing {filteredItems.length} {filteredItems.length === 1 ? "dish" : "dishes"}
