@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { categories, type MenuCategory } from "@/data/menuData";
 import { api, type MenuItem } from "@/services/api";
